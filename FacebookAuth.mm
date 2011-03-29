@@ -174,7 +174,7 @@ static NSString* CONSUMER_SECRET  = @"";
  */
 - (BOOL) authorizeFacebookCode:(NSString*) code
 {
-	NSString *url = [NSString stringWithFormat:@"https://graph.facebook.com/oauth/access_token?client_id=%@&redirect_uri=http://lockinfo.ashman.com/&client_secret=%@&code=%@", CONSUMER_KEY, CONSUMER_SECRET, code];
+	NSString *url = [NSString stringWithFormat:@"https://graph.facebook.com/oauth/access_token?client_id=%@&redirect_uri=http://lockinfo.ashman.com/&scope=read_stream,publish_stream&client_secret=%@&code=%@", CONSUMER_KEY, CONSUMER_SECRET, code];
 
 	NSMutableURLRequest* request = [[[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]] autorelease];
 	self.access_token = @"";
