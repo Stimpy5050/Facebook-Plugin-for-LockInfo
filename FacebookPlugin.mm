@@ -100,7 +100,7 @@ Class $SBTelephonyManager = objc_getClass("SBTelephonyManager");
 
 -(void) initAuth
 {
-	[self loadURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://graph.facebook.com/oauth/authorize?client_id=%@&redirect_uri=http://lockinfo.ashman.com/&display=touch", CLIENT_ID]]];
+	[self loadURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://graph.facebook.com/oauth/authorize?client_id=%@&redirect_uri=http://lockinfo.ashman.com/&display=touch&scope=read_stream,publish_stream", CLIENT_ID]]];
 
 	if (self.auth == nil)
 	{
