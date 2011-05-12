@@ -1,240 +1,51 @@
 #import <Foundation/Foundation.h>
-#import <Common/LocalizedListController.h>
-#import <substrate.h>
+#include <objc/runtime.h>
+#import <Substrate/substrate.h>
 #import <sqlite3.h>
 #import <UIKit/UIKit.h>
 #import <UIKit/UIApplication.h>
-#import <CommonCrypto/CommonHMAC.h>
 #import <SpringBoard/SBApplicationController.h>
 #import <SpringBoard/SBApplication.h>
 #import <SpringBoard/SBTelephonyManager.h>
-#import <Preferences/PSRootController.h>
-#import <Preferences/PSDetailController.h>
-#include "KeychainUtils.h"
-#include "FacebookAuth.h"
-#include "../../SDK/Plugin.h"
-
-static NSString* CLIENT_ID = @"146687422042682";
-
-@interface JSON
-
-+(id) objectWithData:(NSData*) data options:(unsigned) options error:(NSError**) error;
-
-@end
-
-@interface UIScreen (LIAdditions)
-
--(float) scale;
-
-@end
-
-@interface UIImage (LIAdditions)
-- (id)lifacebook_initWithContentsOfResolutionIndependentFile:(NSString *)path;
-+ (UIImage*)lifacebook_imageWithContentsOfResolutionIndependentFile:(NSString *)path;
-@end
-
-@implementation UIImage (LIAdditions)
-
-- (id)lifacebook_initWithContentsOfResolutionIndependentFile:(NSString *)path
-{
-        float scale = ( [[UIScreen mainScreen] respondsToSelector:@selector(scale)] ? (float)[[UIScreen mainScreen] scale] : 1.0);
-        if ( scale == 2.0)
-        {
-                NSString *path2x = [[path stringByDeletingLastPathComponent]
-                        stringByAppendingPathComponent:[NSString stringWithFormat:@"%@@2x.%@",
-                                [[path lastPathComponent] stringByDeletingPathExtension],
-                                [path pathExtension]]];
-
-                if ( [[NSFileManager defaultManager] fileExistsAtPath:path2x] )
-                {
-                        return [self initWithContentsOfFile:path2x];
-                }
-        }
-
-        return [self initWithContentsOfFile:path];
-}
-
-+ (UIImage*) lifacebook_imageWithContentsOfResolutionIndependentFile:(NSString *)path
-{
-        return [[[UIImage alloc] lifacebook_initWithContentsOfResolutionIndependentFile:path] autorelease];
-}
-
-@end
-
+#import "FacebookAuth.h"
+#import "./SDK/Plugin.h"
+#import "FacebookPlugin.h"
 
 Class $SBTelephonyManager = objc_getClass("SBTelephonyManager");
 
 #define Hook(cls, sel, imp) \
-        _ ## imp = MSHookMessage($ ## cls, @selector(sel), &$ ## imp)
-
-@interface FacebookAuthController : PSDetailController <UIWebViewDelegate, UIAlertViewDelegate>
-
-@property (nonatomic, retain) UIWebView* webView;
-@property (nonatomic, retain) UIActivityIndicatorView* activity;
-@property (retain) FacebookAuth* auth;
-
-@end
-
-@implementation FacebookAuthController
-
-@synthesize webView, activity;
-@synthesize auth;
-
-- (void) loadURL:(NSURL*) url
-{
-	self.activity = [[[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite] autorelease];
-
-	UIView* view = [self view];
-	view.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-	view.autoresizesSubviews = YES;
-
-	self.webView = [[UIWebView alloc] initWithFrame:view.bounds];
-	self.webView.autoresizesSubviews = YES;
-	self.webView.autoresizingMask=(UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth);
-	self.webView.scalesPageToFit = YES;
-	self.webView.delegate = self;
-	[view addSubview:self.webView];
-
-	[self.webView loadRequest:[NSURLRequest requestWithURL:url]];
-}
-
--(void) initAuth
-{
-	[self loadURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://graph.facebook.com/oauth/authorize?client_id=%@&redirect_uri=http://lockinfo.ashman.com/&display=touch&scope=read_stream,publish_stream", CLIENT_ID]]];
-
-	if (self.auth == nil)
-	{
-		self.auth = [[[FacebookAuth alloc] init] autorelease];
-/*
-		if ([self.auth requestFacebookToken])
-		else
-			NSLog(@"LI:Facebook: Token request failed!");
-*/
-	}
-}
-
--(void) viewWillBecomeVisible:(id) spec
-{
-	[super viewWillBecomeVisible:spec];
-	[self initAuth];
-}
-
--(void) viewWillAppear:(BOOL) a
-{
-	[super viewWillAppear:a];
-	[self.view bringSubviewToFront:self.webView];
-	[self initAuth];
-}
-
--(void) setBarButton:(UIBarButtonItem*) button
-{
-	PSRootController* root = self.rootController;
-	UINavigationBar* bar = root.navigationBar;
-	UINavigationItem* item = bar.topItem;
-	item.rightBarButtonItem = button;
-}
-
--(void) startLoad:(UIWebView*) wv
-{
-	CGRect r = self.activity.frame;
-	r.size.width += 5;
-	UIView* v = [[[UIView alloc] initWithFrame:r] autorelease];
-	v.backgroundColor = [UIColor clearColor];
-	[v addSubview:self.activity];
-	[self.activity startAnimating];
-	UIBarButtonItem* button = [[[UIBarButtonItem alloc] initWithCustomView:v] autorelease];
-	[self setBarButton:button];
-
-	UIApplication* app = [UIApplication sharedApplication];
-	app.networkActivityIndicatorVisible = YES;
-}
-
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
-{
-	NSLog(@"LI:Facebook: Should load %@?", request.URL);
-	if ([request.URL.host isEqualToString:@"lockinfo.ashman.com"])
-	{	
-		if ([self.auth authorizeFacebookCode:[request.URL.query substringFromIndex:5]])
-			NSLog(@"LI:Facebook: Authorized!");
-		else
-			NSLog(@"LI:Facebook: Authorization failed!");
-
-		if ([self.rootController respondsToSelector:@selector(popControllerWithAnimation:)])
-                	[self.rootController popControllerWithAnimation:YES];
-		else
-                	[self.rootController popViewControllerAnimated:YES];
-
-		return NO;
-	}
-
-	[self startLoad:webView];
-	return YES;
-}
-
--(void) webViewDidFinishLoad:(UIWebView*) wv
-{
-	[self.activity stopAnimating];
-	[self setBarButton:[[[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:wv action:@selector(reload)] autorelease]];
-
-	UIApplication* app = [UIApplication sharedApplication];
-	app.networkActivityIndicatorVisible = NO;
-}
-
--(id) navigationTitle
-{
-	return @"Authentication";
-}
-
-@end
-
-@interface UIProgressIndicator : UIView
-
-+(CGSize) defaultSizeForStyle:(int) size;
--(void) setStyle:(int) style;
-
-@end
+_ ## imp = MSHookMessage($ ## cls, @selector(sel), &$ ## imp)
 
 extern "C" CFStringRef UIDateFormatStringForFormatType(CFStringRef type);
 
 #define localize(str) \
-        [self.plugin.bundle localizedStringForKey:str value:str table:nil]
+[self.plugin.bundle localizedStringForKey:str value:str table:nil]
 
 #define localizeSpec(str) \
-        [self.bundle localizedStringForKey:str value:str table:nil]
+[self.bundle localizedStringForKey:str value:str table:nil]
 
 #define localizeGlobal(str) \
-        [self.plugin.globalBundle localizedStringForKey:str value:str table:nil]
+[self.plugin.globalBundle localizedStringForKey:str value:str table:nil]
 
-static NSString* TWITTER_SERVICE = @"com.ashman.lockinfo.FacebookPlugin";
-
+static NSString* CLIENT_ID = @"119963048025489";
 static NSInteger sortByDate(id obj1, id obj2, void* context)
 {
-        double d1 = [[obj1 objectForKey:@"date"] doubleValue];
-        double d2 = [[obj2 objectForKey:@"date"] doubleValue];
-
-        if (d1 < d2)
-                return NSOrderedDescending;
-        else if (d1 > d2)
-                return NSOrderedAscending;
-        else
-                return NSOrderedSame;
+	double d1 = [[obj1 objectForKey:@"date"] doubleValue];
+	double d2 = [[obj2 objectForKey:@"date"] doubleValue];
+	
+	if (d1 < d2)
+		return NSOrderedDescending;
+	else if (d1 > d2)
+		return NSOrderedAscending;
+	else
+		return NSOrderedSame;
 }
+static NSNumber* YES_VALUE = [NSNumber numberWithBool:YES];
+static UITextView* previewTextView;
 
+@implementation PostView
 
-@interface TweetView : UIView
-
-@property (nonatomic, retain) NSString* name;
-@property (nonatomic, retain) NSString* tweet;
-@property (nonatomic, retain) NSString* time;
-@property (nonatomic, retain) UIImage* image;
-@property (nonatomic, retain) UIImage* icon;
-@property (nonatomic, retain) LITheme* theme;
-
-@end
-
-@implementation TweetView
-
-@synthesize name, time, image, icon, theme, tweet;
+@synthesize name, time, image, theme, message;
 
 -(void) setFrame:(CGRect) r
 {
@@ -251,65 +62,20 @@ static NSInteger sortByDate(id obj1, id obj2, void* context)
 	[self.name drawInRect:CGRectMake(25 + offset, 0, (r.size.width - 180), summary) withLIStyle:self.theme.summaryStyle lineBreakMode:UILineBreakModeTailTruncation];
 	[self.time drawInRect:CGRectMake(r.size.width - 150, 0, 145, summary) withLIStyle:self.theme.detailStyle lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentRight];
 
-        CGSize s = [self.tweet sizeWithFont:self.theme.detailStyle.font constrainedToSize:CGSizeMake(r.size.width - 40, 4000) lineBreakMode:UILineBreakModeWordWrap];
-	[self.tweet drawInRect:CGRectMake(25 + offset, summary, s.width, s.height + 1) withLIStyle:self.theme.detailStyle lineBreakMode:UILineBreakModeWordWrap];
+	CGSize s = [self.message sizeWithFont:self.theme.detailStyle.font constrainedToSize:CGSizeMake(r.size.width - 40, 4000) lineBreakMode:UILineBreakModeWordWrap];
+	[self.message drawInRect:CGRectMake(25 + offset, summary, s.width, s.height + 1) withLIStyle:self.theme.detailStyle lineBreakMode:UILineBreakModeWordWrap];
 
 	if (self.image != [NSNull null] && self.image != nil)
 		[self.image drawInRect:CGRectMake(5, 5, 25, 25)];
-
-	if (self.icon != nil)
-	{
-		// center
-        	s = [self.name sizeWithFont:self.theme.summaryStyle.font];
-		CGPoint p = CGPointMake(25 + offset + s.width + 4, (summary / 2) - (self.icon.size.height / 2) + 2);
-		[self.icon drawAtPoint:p];
-	}
 }
 
 @end
-
-static NSNumber* YES_VALUE = [NSNumber numberWithBool:YES];
-
-@interface UIKeyboardImpl : UIView
-@property (nonatomic, retain) id delegate;
-@end
-
-@interface UIKeyboard : UIView
-
-+(UIKeyboard*) activeKeyboard;
-+(void) initImplementationNow;
-+(CGSize) defaultSize;
-
-@end
-
-@interface FacebookPlugin : UIViewController <LIPluginController, LITableViewDelegate, UITableViewDataSource, UITextViewDelegate, LIPreviewDelegate> 
-{
-	NSTimeInterval nextUpdate;
-	NSDateFormatter* formatter;
-	NSConditionLock* lock;
-}
-
-@property (nonatomic, retain) LIPlugin* plugin;
-@property (retain) NSMutableArray* feed;
-@property (retain) NSMutableDictionary* imageCache;
-@property (nonatomic, retain) UINavigationController* previewController;
-@property (nonatomic, retain) UILabel* countLabel;
-
-@property (nonatomic, retain) UIView* newTweetView;
-
-// preview stuff
-@property (nonatomic, retain) NSDictionary* previewTweet;
-@property (nonatomic, retain) UITextView* previewTextView;
-
-@end
-
-static UITextView* previewTextView;
 
 @implementation FacebookPlugin
 
-@synthesize feed, plugin, imageCache, previewController, countLabel;
+@synthesize feed, feedPosts, plugin, imageCache, previewController, countLabel;
 
-@synthesize previewTweet, previewTextView, newTweetView;
+@synthesize previewPost, previewTextView, newPostView;
 
 -(void) setCount:(int) count
 {
@@ -359,7 +125,7 @@ static UITextView* previewTextView;
 	tv.font = [UIFont systemFontOfSize:20];
 	tv.textColor = [UIColor whiteColor];
 
-	if (NSString* name = [self.previewTweet objectForKey:@"screenName"])
+	if (NSString* name = [self.previewPost objectForKey:@"screenName"])
 		tv.text = [NSString stringWithFormat:@"@%@ ", name];
 
 	tv.delegate = self;
@@ -374,14 +140,17 @@ static UITextView* previewTextView;
 	self.countLabel = l;
 	[v addSubview:l];
 
-	[self setCount:140 - tv.text.length];
+	[self setCount:420 - tv.text.length];
 	self.view = v;
 }
 
 - (BOOL) keyboardInputShouldDelete:(UITextView*)input
 {
-	[self setCount:140 - input.text.length];
-       	return YES;
+	[self setCount:420 - input.text.length];
+	if (input.text.length >= 420)
+		return YES;
+	
+	return NO;
 }
 
 -(void) sendTweet:(NSString*) tweet
@@ -389,16 +158,15 @@ static UITextView* previewTextView;
 	CGSize sz = [UIProgressIndicator defaultSizeForStyle:5];
         UIProgressIndicator* ind = [[[UIProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, sz.width, sz.height)] autorelease];
 	ind.tag = 575933;
-        ind.center = self.newTweetView.center;
+        ind.center = self.newPostView.center;
         [ind setStyle:5];
 	[ind startAnimation];
 
-	self.newTweetView.hidden = YES;
-	[self.newTweetView.superview addSubview:ind];
+	self.newPostView.hidden = YES;
+	[self.newPostView.superview addSubview:ind];
 
 	[self performSelectorInBackground:@selector(sendTweetInBackground:) withObject:tweet];
 }
-
 
 -(void) sendTweetInBackground:(NSString*) tweet
 {
@@ -407,7 +175,7 @@ static UITextView* previewTextView;
 	NSString* url = @"https://api.facebook.com/1/statuses/update.xml";
 
 	NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObjectsAndKeys:tweet, @"status", nil];
-	if (NSString* id = [self.previewTweet objectForKey:@"id"])
+	if (NSString* id = [self.previewPost objectForKey:@"id"])
 		[params setValue:id forKey:@"in_reply_to_status_id"];
 
 	NSMutableArray* paramArray = [NSMutableArray arrayWithCapacity:params.count];
@@ -427,8 +195,8 @@ static UITextView* previewTextView;
 	NSError* error;
 	NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:NULL error:&error];
 
-	[[self.newTweetView.superview viewWithTag:575933] removeFromSuperview];
-	self.newTweetView.hidden = NO;
+	[[self.newPostView.superview viewWithTag:575933] removeFromSuperview];
+	self.newPostView.hidden = NO;
 
 	[pool release];
 }
@@ -441,10 +209,10 @@ static UITextView* previewTextView;
 
 - (BOOL) keyboardInput:(UITextView*)input shouldInsertText:(NSString *)text isMarkedText:(int)marked 
 {
-	if (input.text.length == 140)
+	if ((input.text.length + text.length) >= 420)
 		return NO;
 
-	[self setCount:140 - input.text.length - text.length];
+	[self setCount:420 - input.text.length - text.length];
        	return YES;
 }
 
@@ -454,16 +222,16 @@ static UITextView* previewTextView;
 	self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:localizeGlobal(@"Cancel") style:UIBarButtonItemStyleBordered target:self.plugin action:@selector(dismissPreview)] autorelease];
 	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:localizeGlobal(@"Send") style:UIBarButtonItemStyleDone target:self action:@selector(sendButtonPressed)] autorelease];
 
-	self.previewTweet = tweet;
+	self.previewPost = tweet;
 
 	if (self.isViewLoaded)
 	{
-		if (NSString* name = [self.previewTweet objectForKey:@"screenName"])
+		if (NSString* name = [self.previewPost objectForKey:@"screenName"])
 			self.previewTextView.text = [NSString stringWithFormat:@"@%@ ", name];
 		else
 			self.previewTextView.text = @"";
 
-		[self setCount:140 - self.previewTextView.text.length];
+		[self setCount:420 - self.previewTextView.text.length];
 		[self.previewTextView becomeFirstResponder];
 	}
 
@@ -482,19 +250,19 @@ static UITextView* previewTextView;
 
 -(UIView*) tableView:(LITableView*) tableView previewWithFrame:(CGRect) frame forRowAtIndexPath:(NSIndexPath*) indexPath
 {
-	BOOL newFeed = YES;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewFeed"])
-		newFeed = n.boolValue;
+	BOOL newPosts = YES;
+	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
+		newPosts = n.boolValue;
  
-	int row = indexPath.row - (newFeed ? 1 : 0);
-	if (row < self.feed.count)
+	int row = indexPath.row - (newPosts ? 1 : 0);
+	if (row < self.feedPosts.count)
 	{
 		BOOL replies = YES;
 		if (NSNumber* n = [self.plugin.preferences objectForKey:@"Replies"])
 			replies = n.boolValue;
  
 		if (replies)
-			return [self showTweet:[self.feed objectAtIndex:row]];
+			return [self showTweet:[self.feedPosts objectAtIndex:row]];
 		else
 			return nil;
 	}
@@ -506,55 +274,55 @@ static UITextView* previewTextView;
 
 - (CGFloat)tableView:(LITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-	BOOL newFeed = YES;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewFeed"])
-		newFeed = n.boolValue;
+	BOOL newPosts = YES;
+	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
+		newPosts = n.boolValue;
 
-	if (newFeed && indexPath.row == 0)
+	if (newPosts && indexPath.row == 0)
 		return 24;
 
-	int row = indexPath.row - (newFeed ? 1 : 0);
-	if (row >= self.feed.count)
+	int row = indexPath.row - (newPosts ? 1 : 0);
+	if (row >= self.feedPosts.count)
 		return 0;
 
-	NSDictionary* elem = [self.feed objectAtIndex:row];
-        NSString* text = [elem objectForKey:@"tweet"];
+	NSDictionary* elem = [self.feedPosts objectAtIndex:row];
+	NSString* text = [elem objectForKey:@"message"];
 
 	BOOL showImage = true;
 	if (NSNumber* b = [self.plugin.preferences objectForKey:@"ShowImages"])
-		showImage = b.boolValue;
+	showImage = b.boolValue;
 
 	int width = tableView.frame.size.width - (showImage ? 40 : 30);
-        CGSize s = [text sizeWithFont:tableView.theme.detailStyle.font constrainedToSize:CGSizeMake(width, 480) lineBreakMode:UILineBreakModeWordWrap];
-        return (s.height + tableView.theme.summaryStyle.font.pointSize + 8);
+	CGSize s = [text sizeWithFont:tableView.theme.detailStyle.font constrainedToSize:CGSizeMake(width, 480) lineBreakMode:UILineBreakModeWordWrap];
+	return (s.height + tableView.theme.summaryStyle.font.pointSize + 8);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfItemsInSection:(NSInteger)section 
 {
 	int max = 5;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"MaxFeed"])
+	if (NSNumber* n = [self.plugin.preferences objectForKey:@"MaxPosts"])
 		max = n.intValue;
 
-	return (self.feed.count > max ? max : self.feed.count);
+	return (self.feedPosts.count > max ? max : self.feedPosts.count);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section 
 {
-	BOOL newFeed = YES;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewFeed"])
-		newFeed = n.boolValue;
+	BOOL newPosts = YES;
+	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
+		newPosts = n.boolValue;
 
-	return [self tableView:tableView numberOfItemsInSection:section] + (newFeed ? 1 : 0);
+	return [self tableView:tableView numberOfItemsInSection:section] + (newPosts ? 1 : 0);
 }
 
 - (UITableViewCell *)tableView:(LITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath 
 {
-	BOOL newFeed = YES;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewFeed"])
-		newFeed = n.boolValue;
+	BOOL newPosts = YES;
+	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
+		newPosts = n.boolValue;
 
 	int row = indexPath.row;
-	if (newFeed)
+	if (newPosts)
 	{
 		if (row == 0)
 		{
@@ -583,13 +351,13 @@ static UITextView* previewTextView;
 				[container addSubview:l];
 
 				CGSize sz = [l.text sizeWithFont:l.style.font];
-				UIImage* img = [UIImage lifacebook_imageWithContentsOfResolutionIndependentFile:[self.plugin.bundle pathForResource:@"LIFacebookTweet" ofType:@"png"]];
+				UIImage* img = [UIImage li_imageWithContentsOfResolutionIndependentFile:[self.plugin.bundle pathForResource:@"LIFacebookTweet" ofType:@"png"]];
 				UIImageView* niv = [[[UIImageView alloc] initWithImage:img] autorelease];
 				CGRect r = niv.frame;
 				r.origin.x = (frame.size.width / 2) + (int)(sz.width / 2) + 4;
 				r.origin.y = 2;
 				niv.frame = r;
-				self.newTweetView = niv;
+				self.newPostView = niv;
 				[container addSubview:niv];
 			}
 
@@ -599,38 +367,33 @@ static UITextView* previewTextView;
 		row--;
 	}
 
-	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"TweetCell"];
+	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PostCell"];
 	
 	if (cell == nil) 
 	{
 		CGRect frame = CGRectMake(0, 0, tableView.frame.size.width, 24);
-		cell = [[[UITableViewCell alloc] initWithFrame:frame reuseIdentifier:@"TweetCell"] autorelease];
+		cell = [[[UITableViewCell alloc] initWithFrame:frame reuseIdentifier:@"PostCell"] autorelease];
 		
-		TweetView* v = [[[TweetView alloc] initWithFrame:frame] autorelease];
+		PostView* v = [[[PostView alloc] initWithFrame:frame] autorelease];
 		v.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 		v.backgroundColor = [UIColor clearColor];
 		v.tag = 57;
 		[cell.contentView addSubview:v];
 	}
 
-	TweetView* v = [cell.contentView viewWithTag:57];
+	PostView* v = [cell.contentView viewWithTag:57];
 	v.theme = tableView.theme;
 	v.frame = CGRectMake(0, 0, tableView.frame.size.width, [self tableView:tableView heightForRowAtIndexPath:indexPath]);
 	v.name = nil;
-	v.tweet = nil;
+	v.message = nil;
 	v.time = nil;
-	v.icon = nil;
 	v.image = [NSNull null];
 
-	if (row < self.feed.count)
+	if (row < self.feedPosts.count)
 	{	
-		NSDictionary* elem = [self.feed objectAtIndex:row];
-		v.tweet = [elem objectForKey:@"tweet"];
-	
-		BOOL screenNames = false;
-		if (NSNumber* b = [self.plugin.preferences objectForKey:@"UseScreenNames"])
-			screenNames = b.boolValue;
-		v.name = [elem objectForKey:(screenNames ? @"screenName" : @"name")];
+		NSDictionary* elem = [self.feedPosts objectAtIndex:row];
+		v.message = [elem objectForKey:@"message"];
+		v.name = [[elem objectForKey:@"from"] objectForKey:@"name"];
 
 		BOOL showImage = true;
 		if (NSNumber* b = [self.plugin.preferences objectForKey:@"ShowImages"])
@@ -645,17 +408,8 @@ static UITextView* previewTextView;
 		{
 			v.image = [NSNull null];
 		}
-
-		if ([elem objectForKey:@"directMessage"])
-		{
-			v.icon = [UIImage lifacebook_imageWithContentsOfResolutionIndependentFile:[self.plugin.bundle pathForResource:@"LIFacebookDirectMessage" ofType:@"png"]];
-		}
-		else
-		{
-			v.icon = nil;
-		}
        	 
-		NSNumber* dateNum = [elem objectForKey:@"date"];
+		NSNumber* dateNum = [elem objectForKey:@"created_time"];
 		int diff = 0 - [[NSDate dateWithTimeIntervalSince1970:dateNum.doubleValue] timeIntervalSinceNow];
 		if (diff > 86400)
 		{
@@ -721,7 +475,8 @@ static void activeCallStateChanged(CFNotificationCenterRef center, void *observe
 	self = [super init];
 	self.plugin = plugin;
 	self.imageCache = [NSMutableDictionary dictionaryWithCapacity:10];
-	self.feed = [NSMutableArray arrayWithCapacity:10];
+	self.feed = [NSMutableDictionary dictionaryWithCapacity:10];
+	self.feedPosts = [NSMutableArray arrayWithCapacity:20];
 
 	lock = [[NSConditionLock alloc] init];
 	formatter = [[NSDateFormatter alloc] init];
@@ -752,7 +507,25 @@ static void activeCallStateChanged(CFNotificationCenterRef center, void *observe
 	[super dealloc];
 }
 
--(NSArray*) loadFeed:(NSString*) url
+-(NSArray*) processedFeed:(NSDictionary*)feed
+{
+	NSMutableArray* newPosts = [NSMutableArray arrayWithCapacity:20];
+	NSMutableArray* newFeed = [feed objectForKey:@"data"];
+	
+	for (id obj in newFeed)
+	{
+		if ([obj isKindOfClass:[NSDictionary class]])
+		{
+			if ([[(NSDictionary*)obj objectForKey:@"type"] isEqualToString:@"status"])
+			{
+				[newPosts addObject:obj];
+			}
+		}
+	}
+	return newPosts;
+}
+
+-(NSDictionary*) loadFeed:(NSString*) url
 {
 	FacebookAuth* auth = [[[FacebookAuth alloc] init] autorelease];
 	if (!auth.authorized)
@@ -770,12 +543,11 @@ static void activeCallStateChanged(CFNotificationCenterRef center, void *observe
 
 	NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:NULL error:&error];
 	NSLog(@"LI:Facebook: Error: %@", error);
-	NSLog(@"LI:Facebook: Feed data: %@", [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease]);
 
 	if (data)
 	{
 		id obj = [JSON objectWithData:data options:0 error:&error];
-		NSLog(@"LI:Facebook: Data: %@", obj);
+		return obj;
 	}
 
 	return nil;
@@ -785,23 +557,26 @@ static void activeCallStateChanged(CFNotificationCenterRef center, void *observe
 {	
 	if (SBTelephonyManager* mgr = [$SBTelephonyManager sharedTelephonyManager])
 	{
-                if (mgr.inCall || mgr.incomingCallExists)
+		if (mgr.inCall || mgr.incomingCallExists)
 		{
 			NSLog(@"LI:Facebook: No data connection available.");
-                        return;
+			return;
 		}
 	}
 
 	NSLog(@"LI:Facebook: Loading feed...");
 
-	NSArray* feed = [self loadFeed:@"https://graph.facebook.com/me/home"];
+	NSDictionary* feed = [self loadFeed:@"https://graph.facebook.com/me/home"];
+	
+	NSLog(@"LI:Facebook: feed: %@", feed);
 
-	if (feed.count != 0 && ![feed isEqualToArray:self.feed])
+	if (feed.count != 0 && ![feed isEqualToDictionary:self.feed])
 	{
-		[self.feed setArray:feed];
-
+		NSArray* newFeed = [self processedFeed:feed];
+		[self.feedPosts setArray:newFeed];
+		
 		NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:1];
-		[dict setValue:self.feed forKey:@"feed"];  
+		[dict setValue:newFeed forKey:@"feed"];
 		[self.plugin updateView:dict];
 	}
 

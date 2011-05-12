@@ -163,6 +163,27 @@ static NSString* CONSUMER_SECRET  = @"";
 
 -(BOOL) authorized
 {
+	if (self.access_token.length > 0)
+	{
+		NSString *url = [NSString stringWithFormat:@"https://graph.facebook.com/me/home?access_token=%@", [self.access_token stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+		NSURL* urlObj = [NSURL URLWithString:url];
+		NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:urlObj];
+		request.HTTPMethod = @"GET";
+		
+		NSError* error;
+		
+		NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:NULL error:&error];
+		NSString* dataString = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
+		
+		if ([dataString rangeOfString:@"OAuthException"].location == NSNotFound) {
+			self.oauth_token_authorized = YES;
+		} else {
+			self.oauth_token_authorized = NO;
+		}
+	} else {
+		self.oauth_token_authorized = NO;
+	}
+
 	return self.oauth_token_authorized;
 }
 
@@ -172,9 +193,9 @@ static NSString* CONSUMER_SECRET  = @"";
  *
  * This is the request/response specified in OAuth Core 1.0A section 6.3.
  */
-- (BOOL) authorizeFacebookCode:(NSString*) code
+- (BOOL) authorizeFacebookCode:(NSString*)code
 {
-	NSString *url = [NSString stringWithFormat:@"https://graph.facebook.com/oauth/access_token?client_id=%@&redirect_uri=http://lockinfo.ashman.com/&scope=read_stream,publish_stream&client_secret=%@&code=%@", CONSUMER_KEY, CONSUMER_SECRET, code];
+	NSString *url = [NSString stringWithFormat:@"https://graph.facebook.com/oauth/access_token?client_id=%@&redirect_uri=http://lockinfo.ashman.com/&scope=offline_access,read_stream,publish_stream&client_secret=%@&code=%@", CONSUMER_KEY, CONSUMER_SECRET, code];
 
 	NSMutableURLRequest* request = [[[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]] autorelease];
 	self.access_token = @"";

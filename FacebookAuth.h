@@ -41,20 +41,16 @@
 	BOOL oauth_token_authorized;	
 }
 
-// This is really the only critical oAuth method you need.
-- (NSString *) oAuthHeaderForMethod:(NSString *)method andUrl:(NSString *)url andParams:(NSDictionary *)params;	
-
 // If you detect a login state inconsistency in your app, use this to reset the context back to default,
 // not-logged-in state.
 - (void) forget;
--(BOOL) authorized;
+- (BOOL) authorized;
 
 // Facebook convenience methods
-- (BOOL) requestFacebookToken;
-- (BOOL) authorizeFacebookToken;
+- (NSString *) description;
+- (BOOL) authorizeFacebookCode:(NSString*)code;
 
 // Internal methods, no need to call these directly from outside.
-- (NSString *) OAuthorizationHeader:(NSURL*) url method:(NSString *)method body:(NSData*) body;
 - (NSString *) sha1:(NSString *)str;
 
 @property (assign) BOOL oauth_token_authorized;

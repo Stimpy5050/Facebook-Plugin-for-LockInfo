@@ -41,6 +41,13 @@ $(Name):	KeychainUtils.o FacebookAuth.o $(Name).o
 		ldid -S $@
 		chmod 755 $@
 
+FB: 		KeychainUtils.o FacebookAuth.o FacebookAuthController.o $(Name).o
+		$(LD) $(LDFLAGS) -bundle -o FacebookPlugin $^
+		ldid -S FacebookPlugin
+		chmod 755 FacebookPlugin
+		-mkdir ./Plugin
+		cp FacebookPlugin ./Plugin/FacebookPlugin
+
 %.o:	%.mm
 		$(CPP) -c $(CFLAGS) $< -o $@
 
