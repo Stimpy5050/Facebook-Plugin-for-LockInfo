@@ -1,6 +1,6 @@
 Package: com.burgess.lockinfofacebook
 Name: Facebook Plugin for LockInfo (Native)
-Version: 1.0.1.0
+Version: 1.0.2.0
 Architecture: iphoneos-arm
 Description: Adds a native plugin for Facebook to your LockInfo screen.
 Homepage: http://modmyi.com/info/lockinfofacebook.php

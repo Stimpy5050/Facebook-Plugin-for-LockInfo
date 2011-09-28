@@ -45,6 +45,12 @@
     
 	self.view = tv;
 	[self performSelectorInBackground:@selector(updateNotifications) withObject:nil];
+    
+    // Not sure why this is required for some people but adding it anyway.
+    
+    self.navigationItem.title = localize(@"Notifications");
+    self.navigationItem.hidesBackButton = YES;
+    self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonItemStyleBordered target:self.delegate action:@selector(clearPreview)] autorelease];
 }
 
 - (void)updateNotifications

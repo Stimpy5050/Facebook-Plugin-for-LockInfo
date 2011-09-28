@@ -95,6 +95,7 @@
 			<string>Max Posts Shown</string>
 			<key>validTitles</key>
 			<array>
+				<string>0</string>
 				<string>1</string>
 				<string>2</string>
 				<string>3</string>
@@ -106,6 +107,7 @@
 			</array>
 			<key>validValues</key>
 			<array>
+				<string>0</string>
 				<string>1</string>
 				<string>2</string>
 				<string>3</string>

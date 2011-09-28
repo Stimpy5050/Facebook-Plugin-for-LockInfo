@@ -46,6 +46,13 @@
 	[v addSubview:tv];
 	self.previewTextView = tv;
 	self.view = v;
+    
+    // Not sure why this is required for some people but adding it anyway.
+    
+    self.navigationItem.title = localize(@"Status Update");
+    self.navigationItem.hidesBackButton = YES;
+    self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Post" style:UIBarButtonItemStyleBordered target:self action:@selector(sendButtonPressed)] autorelease];
+    self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Cancel" style:UIBarButtonItemStyleBordered target:self action:@selector(cancelButtonPressed)] autorelease];
 }
 
 - (void)sendPost:(NSString*)post

@@ -82,6 +82,11 @@
 	self.textView = txt;
     self.tableView = tv;
     self.view = v;
+    
+    // Not sure why this is required for some people but adding it anyway.
+    self.navigationItem.title = localize(@"Comments");
+    self.navigationItem.leftBarButtonItem = nil;
+    self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonItemStyleBordered target:self.delegate action:@selector(clearPreview)] autorelease];
 }
 
 - (void)previewDidShow
