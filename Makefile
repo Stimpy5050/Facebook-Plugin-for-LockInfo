@@ -1,8 +1,8 @@
-CC=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-gcc-4.0.1
-CPP=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-g++-4.0.1
+CC=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-gcc-4.2.1
+CPP=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-g++-4.2.1
 LD=$(CC)
 
-SDKVER=4.2
+SDKVER=4.3
 SDK=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 
 LDFLAGS= -framework Foundation \
@@ -10,12 +10,13 @@ LDFLAGS= -framework Foundation \
 	-framework IOKit \
 	-framework JSON \
 	-framework Security \
+	-framework QuartzCore \
 	-framework CoreFoundation \
 	-framework CoreGraphics \
 	-framework Preferences \
 	-framework GraphicsServices \
-	-L../../../Common \
 	-L$(SDK)/usr/lib \
+	-L$(SDK)/usr/lib/system \
 	-F$(SDK)/System/Library/Frameworks \
 	-F$(SDK)/System/Library/PrivateFrameworks \
 	-lsubstrate \
@@ -24,24 +25,26 @@ LDFLAGS= -framework Foundation \
 
 CFLAGS= -I/var/include \
   -I$(SDK)/var/include \
-  -I/var/include/gcc/darwin/4.0 \
+  -I/var/include/gcc/darwin/4.2 \
   -I../../.. \
   -I"$(SDK)/usr/include" \
   -I"/Developer/Platforms/iPhoneOS.platform/Developer/usr/include" \
-  -I"/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/gcc/arm-apple-darwin10/4.0.1/include" \
-  -DDEBUG -Diphoneos_version_min=2.0 -objc-exceptions
+  -I"/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/gcc/arm-apple-darwin10/4.2.1/include" \
+  -DDEBUG -Diphoneos_version_min=2.0 -g -objc-exceptions \
+  -F"$(SDK)/System/Library/Frameworks" \
+  -F"$(SDK)/System/Library/PrivateFrameworks"
 
 Name=FacebookPlugin
-Bundle=com.ashman.lockinfo.$(Name).bundle
+Bundle=com.burgess.lockinfo.$(Name).bundle
 
 all:	package
 
-$(Name):	KeychainUtils.o FacebookAuth.o $(Name).o
-		$(LD) $(LDFLAGS) -lcommon -bundle -o $@ $^
+$(Name):	KeychainUtils.o FacebookAuth.o FacebookAuthController.o FacebookDeAuthController.o FBSingletons.o FBDownload.o FBOptionsView.o FBPreview.o FBPreviewController.o FBCommentsPreview.o FBNewPostPreview.o FBNotificationsPreview.o FBCommentCell.o FBPostCell.o FBNotificationCell.o FBButtonCell.o FBLikesCell.o FBLoadingCell.o FBTextView.o UIImage-FBAdditions.o PullToRefreshView.o $(Name).o
+		$(LD) $(LDFLAGS) -bundle -o $@ $^
 		ldid -S $@
 		chmod 755 $@
 
-FB: 		KeychainUtils.o FacebookAuth.o FacebookAuthController.o $(Name).o
+FB: 		KeychainUtils.o FacebookAuth.o FacebookAuthController.o FacebookDeAuthController.o FBSingletons.o FBDownload.o FBOptionsView.o FBPreview.o FBPreviewController.o FBCommentsPreview.o FBNewPostPreview.o FBNotificationsPreview.o FBCommentCell.o FBPostCell.o FBNotificationCell.o FBButtonCell.o FBLikesCell.o FBLoadingCell.o FBTextView.o UIImage-FBAdditions.o PullToRefreshView.o $(Name).o
 		$(LD) $(LDFLAGS) -bundle -o FacebookPlugin $^
 		ldid -S FacebookPlugin
 		chmod 755 FacebookPlugin

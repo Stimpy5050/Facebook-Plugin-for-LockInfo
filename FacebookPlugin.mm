@@ -1,416 +1,368 @@
-#import <Foundation/Foundation.h>
 #include <objc/runtime.h>
 #import <Substrate/substrate.h>
 #import <sqlite3.h>
-#import <UIKit/UIKit.h>
-#import <UIKit/UIApplication.h>
-#import <SpringBoard/SBApplicationController.h>
-#import <SpringBoard/SBApplication.h>
 #import <SpringBoard/SBTelephonyManager.h>
 #import "FacebookAuth.h"
-#import "./SDK/Plugin.h"
 #import "FacebookPlugin.h"
-
-Class $SBTelephonyManager = objc_getClass("SBTelephonyManager");
-
-#define Hook(cls, sel, imp) \
-_ ## imp = MSHookMessage($ ## cls, @selector(sel), &$ ## imp)
-
-extern "C" CFStringRef UIDateFormatStringForFormatType(CFStringRef type);
-
-#define localize(str) \
-[self.plugin.bundle localizedStringForKey:str value:str table:nil]
-
-#define localizeSpec(str) \
-[self.bundle localizedStringForKey:str value:str table:nil]
-
-#define localizeGlobal(str) \
-[self.plugin.globalBundle localizedStringForKey:str value:str table:nil]
-
-static NSString* CLIENT_ID = @"119963048025489";
-static NSInteger sortByDate(id obj1, id obj2, void* context)
-{
-	double d1 = [[obj1 objectForKey:@"date"] doubleValue];
-	double d2 = [[obj2 objectForKey:@"date"] doubleValue];
-	
-	if (d1 < d2)
-		return NSOrderedDescending;
-	else if (d1 > d2)
-		return NSOrderedAscending;
-	else
-		return NSOrderedSame;
-}
-static NSNumber* YES_VALUE = [NSNumber numberWithBool:YES];
-static UITextView* previewTextView;
-
-@implementation PostView
-
-@synthesize name, time, image, theme, message;
-
--(void) setFrame:(CGRect) r
-{
-	[super setFrame:r];
-	[self setNeedsDisplay];
-}
-
--(void) drawRect:(CGRect) rect
-{
-	CGRect r = self.superview.bounds;
-	int summary = self.theme.summaryStyle.font.pointSize + 3;
-
-	int offset = (self.image == [NSNull null] ? 0 : 10);
-	[self.name drawInRect:CGRectMake(25 + offset, 0, (r.size.width - 180), summary) withLIStyle:self.theme.summaryStyle lineBreakMode:UILineBreakModeTailTruncation];
-	[self.time drawInRect:CGRectMake(r.size.width - 150, 0, 145, summary) withLIStyle:self.theme.detailStyle lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentRight];
-
-	CGSize s = [self.message sizeWithFont:self.theme.detailStyle.font constrainedToSize:CGSizeMake(r.size.width - 40, 4000) lineBreakMode:UILineBreakModeWordWrap];
-	[self.message drawInRect:CGRectMake(25 + offset, summary, s.width, s.height + 1) withLIStyle:self.theme.detailStyle lineBreakMode:UILineBreakModeWordWrap];
-
-	if (self.image != [NSNull null] && self.image != nil)
-		[self.image drawInRect:CGRectMake(5, 5, 25, 25)];
-}
-
-@end
+#import "FBPostCell.h"
+#import "FBButtonCell.h"
+#import "FBPreview.h"
+#import "FBSingletons.h"
+#import "FBCommon.h"
 
 @implementation FacebookPlugin
 
-@synthesize feed, feedPosts, plugin, imageCache, previewController, countLabel;
+@synthesize plugin, feedPosts, previewController, optionsView, currentUserID, currentOptionsCell, theme;
 
-@synthesize previewPost, previewTextView, newPostView;
+#pragma mark -
+#pragma mark Prefernces convenience methods
 
--(void) setCount:(int) count
+- (BOOL)newPosts
 {
-	self.countLabel.text = [[NSNumber numberWithInt:count] stringValue];
+    BOOL newPosts = YES;
+    if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
+        newPosts = n.boolValue;
+    return newPosts;
 }
 
--(void) previewDidShow:(LIPreview*) preview
+- (BOOL)allowComments
 {
-	[self.previewTextView becomeFirstResponder];
-	if (Class peripheral = objc_getClass("UIPeripheralHost"))
-	{
-		[[peripheral sharedInstance] setAutomaticAppearanceEnabled:YES];
-		[[peripheral sharedInstance] orderInAutomatic];
-	}
-	else
-	{
-		[[UIKeyboard automaticKeyboard] orderInWithAnimation:YES];
-	}
-
-	previewTextView = self.previewTextView;
+    BOOL comments = YES;
+    if (NSNumber* c = [self.plugin.preferences objectForKey:@"Comments"])
+        comments = c.boolValue;
+    return comments;
 }
 
--(void) previewWillDismiss:(LIPreview*) preview
+- (BOOL)allowLikes
 {
-	previewTextView = nil;
-
-	if (Class peripheral = objc_getClass("UIPeripheralHost"))
-	{
-		[[peripheral sharedInstance] orderOutAutomatic];
-		[[peripheral sharedInstance] setAutomaticAppearanceEnabled:NO];
-	}
-	else
-	{
-		[[UIKeyboard automaticKeyboard] orderOutWithAnimation:YES];
-	}
+    BOOL likes = YES;
+    if (NSNumber* l = [self.plugin.preferences objectForKey:@"Likes"])
+        likes = l.boolValue;
+    return likes;
 }
 
--(void) loadView
+- (BOOL)showNotifications
 {
-	UIView* v = [[[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]] autorelease];
-	v.backgroundColor = [UIColor blackColor];
-
-	UITextView* tv = [[[UITextView alloc] initWithFrame:v.bounds] autorelease];
-	tv.backgroundColor = [UIColor blackColor];
-	tv.editable = true;
-	tv.keyboardAppearance = UIKeyboardAppearanceAlert;
-	tv.font = [UIFont systemFontOfSize:20];
-	tv.textColor = [UIColor whiteColor];
-
-	if (NSString* name = [self.previewPost objectForKey:@"screenName"])
-		tv.text = [NSString stringWithFormat:@"@%@ ", name];
-
-	tv.delegate = self;
-	[v addSubview:tv];
-	self.previewTextView = tv;
-
-	UILabel* l = [[[UILabel alloc] initWithFrame:CGRectMake(v.frame.size.width - 60, v.frame.size.height - [UIKeyboard defaultSize].height - 80, 60, 30)] autorelease];
-	l.backgroundColor = [UIColor clearColor];
-	l.font = [UIFont boldSystemFontOfSize:24];
-	l.textColor = [UIColor whiteColor];
-	l.textAlignment = UITextAlignmentCenter;
-	self.countLabel = l;
-	[v addSubview:l];
-
-	[self setCount:420 - tv.text.length];
-	self.view = v;
+    BOOL notifications = YES;
+    if (NSNumber* n = [self.plugin.preferences objectForKey:@"ShowNotif"])
+        notifications = n.boolValue;
+    return notifications;
 }
 
-- (BOOL) keyboardInputShouldDelete:(UITextView*)input
+- (BOOL)showImages
 {
-	[self setCount:420 - input.text.length];
-	if (input.text.length >= 420)
-		return YES;
+    BOOL images = YES;
+    if (NSNumber* i = [self.plugin.preferences objectForKey:@"ShowImages"])
+        images = i.boolValue;
+    return images;
+}
+
+- (int)maxPosts
+{
+    int max = 10;
+	if (NSNumber* m = [self.plugin.preferences objectForKey:@"MaxPosts"])
+		max = m.intValue;
+    return max;
+}
+
+- (NSTimeInterval)refreshInterval
+{
+    NSTimeInterval refresh = 900;
+	if (NSNumber* r = [self.plugin.preferences objectForKey:@"RefreshInterval"])
+		refresh = r.intValue;
+    return refresh;
+}
+    
+#pragma mark -
+#pragma mark Button action methods
+
+- (void)statusButtonTapped
+{
+    [self.previewController setUserID:self.currentUserID];
+    [self displayPreview:kNewPostPreview];
+}
+
+- (void)notifButtonTapped
+{
+    [self displayPreview:kNotificationsPreview];
+}
+
+- (void)likeButtonTapped
+{
+    int index = self.currentOptionsCell;
+    FacebookAuth* auth = [[[FacebookAuth alloc] init] autorelease];
 	
-	return NO;
-}
-
--(void) sendTweet:(NSString*) tweet
-{
-	CGSize sz = [UIProgressIndicator defaultSizeForStyle:5];
-        UIProgressIndicator* ind = [[[UIProgressIndicator alloc] initWithFrame:CGRectMake(0, 0, sz.width, sz.height)] autorelease];
-	ind.tag = 575933;
-        ind.center = self.newPostView.center;
-        [ind setStyle:5];
-	[ind startAnimation];
-
-	self.newPostView.hidden = YES;
-	[self.newPostView.superview addSubview:ind];
-
-	[self performSelectorInBackground:@selector(sendTweetInBackground:) withObject:tweet];
-}
-
--(void) sendTweetInBackground:(NSString*) tweet
-{
-	NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-
-	NSString* url = @"https://api.facebook.com/1/statuses/update.xml";
-
-	NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObjectsAndKeys:tweet, @"status", nil];
-	if (NSString* id = [self.previewPost objectForKey:@"id"])
-		[params setValue:id forKey:@"in_reply_to_status_id"];
-
-	NSMutableArray* paramArray = [NSMutableArray arrayWithCapacity:params.count];
-	for (id key in params)
-		[paramArray addObject:[NSString stringWithFormat:@"%@=%@", [key encodedURLParameterString], [[params objectForKey:key] encodedURLParameterString]]];
-	NSString* qs = [paramArray componentsJoinedByString:@"&"];
-
-	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
-	[request setHTTPMethod:@"POST"];
-	NSData* body = [qs dataUsingEncoding:NSUTF8StringEncoding];
-
-	FacebookAuth* auth = [[[FacebookAuth alloc] init] autorelease];
-	NSString* header = [auth OAuthorizationHeader:request.URL method:@"POST" body:body];
-	[request setValue:header forHTTPHeaderField:@"Authorization"];
-	[request setHTTPBody:body];
-
-	NSError* error;
-	NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:NULL error:&error];
-
-	[[self.newPostView.superview viewWithTag:575933] removeFromSuperview];
-	self.newPostView.hidden = NO;
-
-	[pool release];
-}
-
--(void) sendButtonPressed
-{
-	[self sendTweet:self.previewTextView.text];
-	[self.plugin dismissPreview];
-}
-
-- (BOOL) keyboardInput:(UITextView*)input shouldInsertText:(NSString *)text isMarkedText:(int)marked 
-{
-	if ((input.text.length + text.length) >= 420)
-		return NO;
-
-	[self setCount:420 - input.text.length - text.length];
-       	return YES;
-}
-
--(UIView*) showTweet:(NSDictionary*) tweet
-{
-	self.navigationItem.title = localize(@"Facebook");
-	self.navigationItem.leftBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:localizeGlobal(@"Cancel") style:UIBarButtonItemStyleBordered target:self.plugin action:@selector(dismissPreview)] autorelease];
-	self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:localizeGlobal(@"Send") style:UIBarButtonItemStyleDone target:self action:@selector(sendButtonPressed)] autorelease];
-
-	self.previewPost = tweet;
-
-	if (self.isViewLoaded)
+	NSString* httpMethod;
+	
+	NSDictionary* elem = [self.feedPosts objectAtIndex:index];
+	NSDictionary* likes = [elem objectForKey:@"likes"];
+	
+	BOOL userLikes = [[likes objectForKey:@"user_likes"] boolValue];
+	int noLikes = [[likes objectForKey:@"count"] intValue];
+	
+	if (userLikes)
+		httpMethod = @"DELETE";
+	else
+		httpMethod = @"POST";
+				
+	if ([auth authorized])
 	{
-		if (NSString* name = [self.previewPost objectForKey:@"screenName"])
-			self.previewTextView.text = [NSString stringWithFormat:@"@%@ ", name];
+		NSString* url = [NSString stringWithFormat:@"https://graph.facebook.com/%@/likes", [elem objectForKey:@"post_id"]];
+		NSString* fullURL = [[NSString stringWithFormat:@"%@&access_token=%@", url, auth.access_token] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:fullURL]];
+		[request setHTTPMethod:httpMethod];
+          
+		NSError* error = nil;
+		NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:NULL error:&error];
+
+		if (error)
+			DLog(@"LI: FB: Error liking post");
 		else
-			self.previewTextView.text = @"";
-
-		[self setCount:420 - self.previewTextView.text.length];
-		[self.previewTextView becomeFirstResponder];
+		{
+			if (userLikes)
+			{
+				userLikes = NO;
+				noLikes--;
+			}
+			else
+			{
+				userLikes = YES;
+				noLikes++;
+			}
+	
+			[[[self.feedPosts objectAtIndex:index] objectForKey:@"likes"] setObject:[NSNumber numberWithBool:userLikes] forKey:@"user_likes"];
+			[[[self.feedPosts objectAtIndex:index] objectForKey:@"likes"] setObject:[NSNumber numberWithInt:noLikes] forKey:@"count"];
+            
+            NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:1];
+            [dict setValue:self.feedPosts forKey:@"feed"];
+            [self.plugin updateView:dict];
+		}
 	}
+	else
+		DLog(@"LI: FB: Auth not authorised to like comment");
+}
 
-	self.previewController = [[[UINavigationController alloc] initWithRootViewController:self] autorelease];
-	UINavigationBar* bar = self.previewController.navigationBar;
-	bar.barStyle = UIBarStyleBlackOpaque;
+- (void)commentButtonTapped
+{
+	int index = self.currentOptionsCell;
+	[self.previewController setPostData:[self.feedPosts objectAtIndex:index] forRowAtIndex:index];
+    [self.previewController setKeyboardShouldShow:YES];
+	[self displayPreview:kCommentsPreview];
+}
 
+- (void)removePopover
+{  
+    [self.optionsView removeFromSuperview];
+}
+
+- (void)showOptionsViewForRowAtIndex:(int)index arrowPoint:(CGPoint)arrowPoint
+{
+    self.currentOptionsCell = index;
+    
+    if (!self.optionsView)
+    {
+        self.optionsView = [[[FBOptionsView alloc] init] autorelease];
+        self.optionsView.delegate = self;
+    }
+    
+    [self.optionsView setArrowPoint:arrowPoint];
+    
+    NSDictionary* elem = [self.feedPosts objectAtIndex:index];
+   
+    BOOL comments = (([[[elem objectForKey:@"comments"] objectForKey:@"can_post"] boolValue]) && ([self allowComments]));
+    BOOL likes = (([[[elem objectForKey:@"likes"] objectForKey:@"can_like"] boolValue]) && ([self allowLikes]));
+    BOOL userLikes = [[[elem objectForKey:@"likes"] objectForKey:@"user_likes"] boolValue];
+                        
+    int optionsButtons;
+	if (comments && likes)
+    {
+        if (userLikes)
+            optionsButtons = kOptionsViewUnlikeAndCommentButtons;
+        else
+            optionsButtons = kOptionsViewLikeAndCommentButtons;
+    }
+	else if (comments)
+		optionsButtons = kOptionsViewCommentButtonOnly;
+	else if (likes)
+    {
+        if (userLikes)
+            optionsButtons = kOptionsViewUnlikeButtonOnly;
+        else
+            optionsButtons = kOptionsViewLikeButtonOnly;
+    }
+		
+	[self.optionsView setButtons:optionsButtons];
+    
+    UIWindow* keyWindow = [[UIApplication sharedApplication] keyWindow];
+    
+    if (!keyWindow)
+    {
+        NSArray* windows = [[UIApplication sharedApplication] windows];
+        
+        for (id window in windows)
+        {
+            if ([window isKindOfClass:objc_getClass("SBAlertWindow")])
+            {
+                keyWindow = window;
+                break;
+            }
+        }
+    }
+       
+    if (keyWindow)
+        [keyWindow insertSubview:self.optionsView aboveSubview:keyWindow];
+    else
+        DLog(@"LI: FB: windows: %@", [[UIApplication sharedApplication] windows]);
+}
+
+- (void)infoButtonPressedForRowAtIndex:(int)index
+{
+	self.currentOptionsCell = index;
+    [self.previewController setKeyboardShouldShow:NO];
+	[self.previewController setPostData:[self.feedPosts objectAtIndex:index] forRowAtIndex:index];
+	[self displayPreview:kCommentsPreview];
+}
+
+#pragma mark -
+#pragma mark Preview methods
+
+- (void)displayKeyboard:(UIView*)keyboard
+{
+    [self.plugin showKeyboard:keyboard];
+}
+
+- (void)resignKeyboard
+{
+    [self.plugin dismissKeyboard];
+}
+
+- (void)displayPreview:(int)preview
+{
+	[self.previewController setTheme:self.theme];
+	[self.previewController displayPreview:preview];
+}
+
+#pragma mark -
+#pragma mark TableView methods
+
+- (UIView*)tableView:(LITableView*)tableView previewWithFrame:(CGRect)frame forRowAtIndexPath:(NSIndexPath*)indexPath
+{
 	return self.previewController.view;
 }
 
--(void) showNewTweet
-{
-	UIView* v = [self showTweet:[NSDictionary dictionary]];
-	[self.plugin showPreview:v];
-}
-
--(UIView*) tableView:(LITableView*) tableView previewWithFrame:(CGRect) frame forRowAtIndexPath:(NSIndexPath*) indexPath
-{
-	BOOL newPosts = YES;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
-		newPosts = n.boolValue;
- 
-	int row = indexPath.row - (newPosts ? 1 : 0);
-	if (row < self.feedPosts.count)
-	{
-		BOOL replies = YES;
-		if (NSNumber* n = [self.plugin.preferences objectForKey:@"Replies"])
-			replies = n.boolValue;
- 
-		if (replies)
-			return [self showTweet:[self.feedPosts objectAtIndex:row]];
-		else
-			return nil;
-	}
-	else
-	{
-		return [self showTweet:[NSDictionary dictionary]];
-	}
-}
-
 - (CGFloat)tableView:(LITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-	BOOL newPosts = YES;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
-		newPosts = n.boolValue;
-
-	if (newPosts && indexPath.row == 0)
-		return 24;
-
-	int row = indexPath.row - (newPosts ? 1 : 0);
+{    
+    BOOL buttonCell = ([self newPosts] || [self showNotifications]);
+    
+    if (buttonCell && indexPath.row == 0)
+		return 42;
+    
+    int row = indexPath.row - (buttonCell ? 1 : 0);
 	if (row >= self.feedPosts.count)
 		return 0;
-
-	NSDictionary* elem = [self.feedPosts objectAtIndex:row];
-	NSString* text = [elem objectForKey:@"message"];
-
-	BOOL showImage = true;
-	if (NSNumber* b = [self.plugin.preferences objectForKey:@"ShowImages"])
-	showImage = b.boolValue;
-
-	int width = tableView.frame.size.width - (showImage ? 40 : 30);
-	CGSize s = [text sizeWithFont:tableView.theme.detailStyle.font constrainedToSize:CGSizeMake(width, 480) lineBreakMode:UILineBreakModeWordWrap];
-	return (s.height + tableView.theme.summaryStyle.font.pointSize + 8);
+    
+    int width = tableView.frame.size.width;
+	int summary = tableView.theme.summaryStyle.font.pointSize;
+    
+	int leftOffset = ([self showImages] ? 25 : 0);
+    int rightOffset = ([self allowComments] ? 27 : 0);
+    
+    NSDictionary* elem = [self.feedPosts objectAtIndex:row];
+    
+    NSString* message = [elem objectForKey:@"message"];
+	CGSize s = [message sizeWithFont:tableView.theme.detailStyle.font constrainedToSize:CGSizeMake(width - (10 + leftOffset + rightOffset), 4000) lineBreakMode:UILineBreakModeWordWrap];
+    
+    int infoHeight = ((([[[elem objectForKey:@"likes"] objectForKey:@"count"] intValue] > 0) || ([[[elem objectForKey:@"comments"] objectForKey:@"count"] intValue] > 0)) ? 31 : 0);
+    
+	return (s.height + (2 * summary) + infoHeight + 10);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfItemsInSection:(NSInteger)section 
 {
-	int max = 5;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"MaxPosts"])
-		max = n.intValue;
-
+	int max = [self maxPosts];
+    
 	return (self.feedPosts.count > max ? max : self.feedPosts.count);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section 
-{
-	BOOL newPosts = YES;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
-		newPosts = n.boolValue;
-
-	return [self tableView:tableView numberOfItemsInSection:section] + (newPosts ? 1 : 0);
+{    
+	return [self tableView:tableView numberOfItemsInSection:section] + (([self newPosts] || [self showNotifications]) ? 1 : 0);
 }
 
 - (UITableViewCell *)tableView:(LITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath 
 {
-	BOOL newPosts = YES;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"NewPosts"])
-		newPosts = n.boolValue;
-
 	int row = indexPath.row;
-	if (newPosts)
-	{
-		if (row == 0)
-		{
-			UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"NewTweetCell"];
-			if (cell == nil) 
-			{
-				CGRect frame = CGRectMake(0, -1, tableView.frame.size.width, 24);
-				cell = [[[UITableViewCell alloc] initWithFrame:frame reuseIdentifier:@"NewTweetCell"] autorelease];
-
-				UIImageView* iv = [[[UIImageView alloc] initWithImage:tableView.sectionSubheader] autorelease];
-				iv.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-				iv.frame = frame;
-				[cell.contentView addSubview:iv];
-
-				UIView* container = [[[UIView alloc] initWithFrame:frame] autorelease];
-				container.backgroundColor = [UIColor clearColor];
-				container.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-				[cell.contentView addSubview:container];
-
-				int fontSize = tableView.theme.headerStyle.font.pointSize + 3;
-				LILabel* l = [tableView labelWithFrame:frame];
-				l.backgroundColor = [UIColor clearColor];
-				l.style = tableView.theme.headerStyle;
-				l.text = localize(@"Compose");
-				l.textAlignment = UITextAlignmentCenter;
-				[container addSubview:l];
-
-				CGSize sz = [l.text sizeWithFont:l.style.font];
-				UIImage* img = [UIImage li_imageWithContentsOfResolutionIndependentFile:[self.plugin.bundle pathForResource:@"LIFacebookTweet" ofType:@"png"]];
-				UIImageView* niv = [[[UIImageView alloc] initWithImage:img] autorelease];
-				CGRect r = niv.frame;
-				r.origin.x = (frame.size.width / 2) + (int)(sz.width / 2) + 4;
-				r.origin.y = 2;
-				niv.frame = r;
-				self.newPostView = niv;
-				[container addSubview:niv];
-			}
-
-			return cell;
-		}
+    
+    if ([self newPosts] || [self showNotifications])
+    {
+        if (row == 0)
+        {
+            FBButtonCell* cell = (FBButtonCell*)[tableView dequeueReusableCellWithIdentifier:@"FBButtonCell"];
+            
+            if (cell == nil) 
+                cell = [[[FBButtonCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"FBButtonCell"] autorelease];
+                
+            if (!cell.backgroundLIView.image)
+                cell.backgroundLIView.image = tableView.sectionSubheader;
+            
+            cell.delegate = self;
+            cell.allowStatus = [self newPosts];
+            cell.allowNotifications = [self showNotifications];
+            [cell setNeedsLayout];
+            
+            return cell;
+        }
 		
-		row--;
-	}
-
-	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PostCell"];
+        row--;
+    }
+	
+	if (row == 0)
+		self.theme = tableView.theme; // Set here so theme is updated when table redraws
+	
+	FBPostCell* cell = (FBPostCell*)[tableView dequeueReusableCellWithIdentifier:@"PostCell"];
 	
 	if (cell == nil) 
-	{
-		CGRect frame = CGRectMake(0, 0, tableView.frame.size.width, 24);
-		cell = [[[UITableViewCell alloc] initWithFrame:frame reuseIdentifier:@"PostCell"] autorelease];
-		
-		PostView* v = [[[PostView alloc] initWithFrame:frame] autorelease];
-		v.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-		v.backgroundColor = [UIColor clearColor];
-		v.tag = 57;
-		[cell.contentView addSubview:v];
-	}
-
-	PostView* v = [cell.contentView viewWithTag:57];
+		cell = [[[FBPostCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"PostCell"] autorelease];
+    
+    cell.delegate = self;
+    cell.rowIndex = row;
+    
+	FBPostView* v = cell.postView;
 	v.theme = tableView.theme;
-	v.frame = CGRectMake(0, 0, tableView.frame.size.width, [self tableView:tableView heightForRowAtIndexPath:indexPath]);
-	v.name = nil;
+    v.name = nil;
 	v.message = nil;
 	v.time = nil;
-	v.image = [NSNull null];
+	v.image = (id)[NSNull null];
 
 	if (row < self.feedPosts.count)
 	{	
 		NSDictionary* elem = [self.feedPosts objectAtIndex:row];
 		v.message = [elem objectForKey:@"message"];
-		v.name = [[elem objectForKey:@"from"] objectForKey:@"name"];
+        
+        if ([elem objectForKey:@"target_id"] != (id)[NSNull null])
+        {
+            v.name = [NSString stringWithFormat:@"%@ ▸ %@", [self nameForUserID:[elem objectForKey:@"actor_id"]], [self nameForUserID:[elem objectForKey:@"target_id"]]];
+        } else {
+            v.name = [self nameForUserID:[elem objectForKey:@"actor_id"]];
+        }
+        
+        v.allowComments = (([[[elem objectForKey:@"comments"] objectForKey:@"can_post"] boolValue]) && ([self allowComments]));
+        v.noComments = [[[elem objectForKey:@"comments"] objectForKey:@"count"] intValue];
+        
+        v.allowLikes = (([[[elem objectForKey:@"likes"] objectForKey:@"can_like"] boolValue]) && ([self allowLikes]));
+		v.noLikes = [[[elem objectForKey:@"likes"] objectForKey:@"count"] intValue];
 
-		BOOL showImage = true;
-		if (NSNumber* b = [self.plugin.preferences objectForKey:@"ShowImages"])
-			showImage = b.boolValue;
-
-		if (showImage)
+		if ([self showImages])
 		{
-			NSString* img = [elem objectForKey:@"image"];
-			v.image = [self.imageCache objectForKey:img];
+			NSString* userID = [elem objectForKey:@"actor_id"];
+			v.image = [[FBSharedDataController sharedInstance] friendsImage:userID];
 		}
 		else
-		{
-			v.image = [NSNull null];
-		}
-       	 
-		NSNumber* dateNum = [elem objectForKey:@"created_time"];
-		int diff = 0 - [[NSDate dateWithTimeIntervalSince1970:dateNum.doubleValue] timeIntervalSinceNow];
+			v.image = (id)[NSNull null];
+        
+        NSDate* fbdate = [NSDate dateWithTimeIntervalSince1970:[[elem objectForKey:@"created_time"] doubleValue]];
+
+		int diff = 0 - [fbdate timeIntervalSinceNow];
 		if (diff > 86400)
 		{
 			int n = (int)(diff / 86400);
@@ -443,151 +395,207 @@ static UITextView* previewTextView;
 
 }
 
-MSHook(void, setDelegate, id self, SEL sel, id delegate)
-{
-	if (previewTextView)
-		[previewTextView becomeFirstResponder];
-	else
-		_setDelegate(self, sel, delegate);
-	
-}
-	
-MSHook(BOOL, handleKeyEvent, id self, SEL sel, id event)
-{
-	if (previewTextView)
-		return NO;
-	else
-		return _handleKeyEvent(self, sel, event);
-}
+#pragma mark -
+#pragma mark Initialisation & Miscellaneous
 
 static void callInterruptedApp(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
-	NSLog(@"LI:Facebook: Call interrupted app");
+	DLog(@"LI:Facebook: Call interrupted app");
 }
 
 static void activeCallStateChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
-	NSLog(@"LI:Facebook: Call state changed");
+	DLog(@"LI:Facebook: Call state changed");
 }
 
--(id) initWithPlugin:(LIPlugin*) plugin
+MSHook(void, _undimScreen, id self, SEL sel)
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"com.burgess.lockinfo.FacebookPlugin.screenUndim" object:nil];
+	__undimScreen(self, sel);
+}
+
+MSHook(BOOL, clickedMenuButton, id self, SEL sel)
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"com.burgess.lockinfo.FacebookPlugin.screenUndim" object:nil];
+	return _clickedMenuButton(self, sel);
+}
+
+- (id)initWithPlugin:(LIPlugin*) plugin
 {
 	self = [super init];
 	self.plugin = plugin;
-	self.imageCache = [NSMutableDictionary dictionaryWithCapacity:10];
-	self.feed = [NSMutableDictionary dictionaryWithCapacity:10];
+    
+    [[FBSharedDataController sharedInstance] initCache];
+    
 	self.feedPosts = [NSMutableArray arrayWithCapacity:20];
+    self.previewController = [[[FBPreviewController alloc] init] autorelease];
+    self.previewController.delegate = self;
 
 	lock = [[NSConditionLock alloc] init];
-	formatter = [[NSDateFormatter alloc] init];
-	formatter.locale = [[[NSLocale alloc] initWithLocaleIdentifier:@"en_US"] autorelease];
-	formatter.dateFormat = @"EEE MMM dd HH:mm:ss Z yyyy";
 
-	plugin.tableViewDataSource = self;
-	plugin.tableViewDelegate = self;
-	plugin.previewDelegate = self;
+	self.plugin.tableViewDataSource = self;
+	self.plugin.tableViewDelegate = self;
+	self.plugin.previewDelegate = self.previewController;
+    
+    Class $SBAwayController = objc_getClass("SBAwayController");
+	Hook(SBAwayController, _undimScreen, _undimScreen);
+    
+    Class $SBUIController = objc_getClass("SBUIController");
+    Hook(SBUIController, clickedMenuButton, clickedMenuButton);
 
 	NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
 	[center addObserver:self selector:@selector(update:) name:LITimerNotification object:nil];
 	[center addObserver:self selector:@selector(update:) name:LIViewReadyNotification object:nil];
-
-	Class $UIKeyboardImpl = objc_getClass("UIKeyboardImpl");
-	Hook(UIKeyboardImpl, setDelegate:, setDelegate);
-
-	Class $SBAwayController = objc_getClass("SBAwayController");
-	Hook(SBAwayController, handleKeyEvent:, handleKeyEvent);
+    [center addObserver:self selector:@selector(removePopover) name:@"com.burgess.lockinfo.FacebookPlugin.screenUndim" object:nil];
+    [center addObserver:self selector:@selector(removePopover) name:UIApplicationWillChangeStatusBarOrientationNotification object:nil];
 
 	return self;
 }
 
--(void) dealloc
+- (void)dealloc
 {
-	[formatter release];
 	[lock release];
+    [previewController release];
+    [feedPosts release];
 	[super dealloc];
 }
 
--(NSArray*) processedFeed:(NSDictionary*)feed
+- (NSString*)nameForUserID:(NSString*)userID
 {
-	NSMutableArray* newPosts = [NSMutableArray arrayWithCapacity:20];
-	NSMutableArray* newFeed = [feed objectForKey:@"data"];
-	
-	for (id obj in newFeed)
-	{
-		if ([obj isKindOfClass:[NSDictionary class]])
-		{
-			if ([[(NSDictionary*)obj objectForKey:@"type"] isEqualToString:@"status"])
-			{
-				[newPosts addObject:obj];
-			}
-		}
-	}
+	if ([[FBSharedDataController sharedInstance] friendsName:userID])
+        return [[FBSharedDataController sharedInstance] friendsName:userID];
+    
+    NSDictionary* profile = (NSDictionary*)[self loadFBData:[NSString stringWithFormat:@"https://graph.facebook.com/%@?format=JSON", userID]];
+    NSString* name = [profile objectForKey:@"name"];
+	[[FBSharedDataController sharedInstance] addUserToNameCache:name userID:userID];
+    
+    return name;
+}
+
+- (void)openURL:(NSURL*)url
+{
+	[self.plugin launchURL:url];
+}
+
+#pragma mark -
+#pragma mark Update methods
+
+- (void)updateComments:(NSDictionary*)comments forRowAtIndex:(int)index
+{
+	[[self.feedPosts objectAtIndex:index] setObject:comments forKey:@"comments"];
+    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:1];
+    [dict setValue:self.feedPosts forKey:@"feed"];
+    [self.plugin updateView:dict];
+}
+
+- (void)updateLikes:(NSDictionary*)likes forRowAtIndex:(int)index
+{
+	[[self.feedPosts objectAtIndex:index] setObject:likes forKey:@"likes"];
+    NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:1];
+    [dict setValue:self.feedPosts forKey:@"feed"];
+    [self.plugin updateView:dict];
+}
+
+- (void)processUsers:(NSArray*)feed
+{
+    NSMutableArray* feedUsers = [NSMutableArray arrayWithArray:[[feed objectAtIndex:1] objectForKey:@"fql_result_set"]];
+    
+    for (id user in feedUsers)
+    {
+        [[FBSharedDataController sharedInstance] addUserToNameCache:[user objectForKey:@"name"] userID:[user objectForKey:@"id"]];
+        [[FBSharedDataController sharedInstance] addUserToDownloadQueue:[user objectForKey:@"id"]];
+    }
+
+    [[FBSharedDataController sharedInstance] performSelectorOnMainThread:@selector(processDownloads) withObject:nil waitUntilDone:NO];
+}
+
+- (NSArray*)processedFeed:(NSArray*)feed
+{
+	NSMutableArray* newPosts = [NSMutableArray arrayWithArray:[[feed objectAtIndex:0] objectForKey:@"fql_result_set"]];
+
 	return newPosts;
 }
 
--(NSDictionary*) loadFeed:(NSString*) url
+- (id)loadFBData:(NSString*) url
 {
 	FacebookAuth* auth = [[[FacebookAuth alloc] init] autorelease];
 	if (!auth.authorized)
 	{
-		NSLog(@"LI:Facebook: Facebook client is not authorized!");
+		DLog(@"LI:Facebook: Facebook client is not authorized!");
 		return nil;
 	}
 
 	NSError* error = nil;
-
-	NSString* fullURL = [NSString stringWithFormat:@"%@?access_token=%@", url, [auth.access_token stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+                      
+	NSString* fullURL = [NSString stringWithFormat:@"%@&access_token=%@", url, [auth.access_token stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 	NSURL* urlObj = [NSURL URLWithString:fullURL];
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:urlObj];
 	request.HTTPMethod = @"GET";
-
 	NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:NULL error:&error];
-	NSLog(@"LI:Facebook: Error: %@", error);
+	
+    if (error)
+    {
+        DLog(@"LI: Facebook: Data Request Error: %@", error);
+        error = nil;
+    }
 
 	if (data)
 	{
 		id obj = [JSON objectWithData:data options:0 error:&error];
-		return obj;
+		DLog(@"LI: FB: Loaded Data: %@", obj);
+        return obj;
 	}
 
 	return nil;
 }
 
--(void) _updateFeed
+- (void)_updateFeed
 {	
-	if (SBTelephonyManager* mgr = [$SBTelephonyManager sharedTelephonyManager])
+	if (SBTelephonyManager* mgr = [objc_getClass("SBTelephonyManager") sharedTelephonyManager])
 	{
 		if (mgr.inCall || mgr.incomingCallExists)
 		{
-			NSLog(@"LI:Facebook: No data connection available.");
+			DLog(@"LI:Facebook: No data connection available.");
 			return;
 		}
 	}
 
-	NSLog(@"LI:Facebook: Loading feed...");
-
-	NSDictionary* feed = [self loadFeed:@"https://graph.facebook.com/me/home"];
-	
-	NSLog(@"LI:Facebook: feed: %@", feed);
-
-	if (feed.count != 0 && ![feed isEqualToDictionary:self.feed])
+	DLog(@"LI:Facebook: Loading feed...");
+    
+    int noPosts = [self maxPosts];
+    NSError* error = nil;
+    
+    NSString* nfQuery = [NSString stringWithFormat:@"SELECT post_id, actor_id, target_id, created_time, message, comments, likes FROM stream WHERE filter_key in (SELECT filter_key FROM stream_filter WHERE uid=me() AND type='newsfeed') AND is_hidden = 0 AND strlen(message) != 0 AND attachment.media='' AND strlen(attachment.name)=0 AND strlen(attachment.href)=0 AND strlen(attachment.description)=0 LIMIT %d", noPosts];
+    NSString* userQuery = @"SELECT id, name FROM profile WHERE id IN (SELECT actor_id FROM #NewsFeed) OR id IN (SELECT comments.comment_list.fromid FROM #NewsFeed) OR id IN (SELECT target_id FROM #NewsFeed)";
+    NSArray* multiQuery = [NSDictionary dictionaryWithObjectsAndKeys:nfQuery, @"NewsFeed", userQuery, @"Users", nil];
+    NSString* query = [JSON stringWithObject:multiQuery options:0 error:&error];
+    
+    if (error)
+        DLog(@"LI: Facebook: JSON error: %@", error);
+    
+	NSArray* feed = (NSArray*)[self loadFBData:[NSString stringWithFormat:@"https://api.facebook.com/method/fql.multiquery?queries=%@&format=JSON", [query stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    
+    NSArray* newFeed = [self processedFeed:feed];
+    [self processUsers:feed];
+    
+    DLog(@"LI: FB: Feed: %@", newFeed);
+    
+	if ([newFeed count] != 0 && ![newFeed isEqualToArray:self.feedPosts])
 	{
-		NSArray* newFeed = [self processedFeed:feed];
 		[self.feedPosts setArray:newFeed];
 		
 		NSMutableDictionary* dict = [NSMutableDictionary dictionaryWithCapacity:1];
 		[dict setValue:newFeed forKey:@"feed"];
 		[self.plugin updateView:dict];
 	}
+	
+	NSDictionary* profile = (NSDictionary*)[self loadFBData:@"https://graph.facebook.com/me?format=JSON"];
+	self.currentUserID = [profile objectForKey:@"id"];
 
-	NSTimeInterval refresh = 900;
-	if (NSNumber* n = [self.plugin.preferences objectForKey:@"RefreshInterval"])
-		refresh = n.intValue;
-
-	nextUpdate = [[NSDate dateWithTimeIntervalSinceNow:refresh] timeIntervalSinceReferenceDate];
+	nextUpdate = [[NSDate dateWithTimeIntervalSinceNow:[self refreshInterval]] timeIntervalSinceReferenceDate];
 }
 
-- (void) updateFeed:(BOOL) force
+- (void)updateFeed:(BOOL) force
 {
 	if (!self.plugin.enabled)
 		return;
@@ -605,14 +613,19 @@ static void activeCallStateChanged(CFNotificationCenterRef center, void *observe
 	[pool release];
 }
 
-- (void) update:(NSNotification*) notif
+- (void)update:(NSNotification*) notif
 {
 	[self updateFeed:NO];
 }
 
-- (void) tableView:(LITableView*) tableView reloadDataInSection:(NSInteger)section
+- (void)tableView:(LITableView*) tableView reloadDataInSection:(NSInteger)section
 {
 	[self updateFeed:YES];
+}
+
+- (void)donateButtonPressed:(id)param
+{
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GA5GYDVR3XULY"]];
 }
 
 @end

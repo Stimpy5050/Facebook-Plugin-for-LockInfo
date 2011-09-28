@@ -14,7 +14,7 @@
 			<key>default</key>
 			<string>YES</string>
 			<key>defaults</key>
-			<string>com.ashman.lockinfo.FacebookPlugin</string>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
 			<key>key</key>
 			<string>NewPosts</string>
 			<key>label</key>
@@ -26,7 +26,19 @@
 			<key>default</key>
 			<string>YES</string>
 			<key>defaults</key>
-			<string>com.ashman.lockinfo.FacebookPlugin</string>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
+			<key>key</key>
+			<string>ShowNotif</string>
+			<key>label</key>
+			<string>Show Notifications</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<string>YES</string>
+			<key>defaults</key>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
 			<key>key</key>
 			<string>Comments</string>
 			<key>label</key>
@@ -36,9 +48,21 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
+			<string>YES</string>
+			<key>defaults</key>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
+			<key>key</key>
+			<string>Likes</string>
+			<key>label</key>
+			<string>Allow Likes</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
 			<string>NO</string>
 			<key>defaults</key>
-			<string>com.ashman.lockinfo.FacebookPlugin</string>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
 			<key>key</key>
 			<string>Collapsed</string>
 			<key>label</key>
@@ -50,7 +74,7 @@
 			<key>default</key>
 			<string>YES</string>
 			<key>defaults</key>
-			<string>com.ashman.lockinfo.FacebookPlugin</string>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
 			<key>key</key>
 			<string>ShowCount</string>
 			<key>label</key>
@@ -62,14 +86,64 @@
 			<key>default</key>
 			<string>YES</string>
 			<key>defaults</key>
-			<string>com.ashman.lockinfo.FacebookPlugin</string>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
 			<key>key</key>
 			<string>ShowImages</string>
 			<key>label</key>
 			<string>Show Images</string>
 		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>I do not recieve any of the profits from sales of LockInfo, so if you appreciate my work please feel free to donate.
+Thanks to Joaquin Alviz for making the Plugin&apos;s icons!</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Donate</string>
+			<key>action</key>
+			<string>donateButtonPressed:</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>isStaticText</key>
+			<string>YES</string>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<string>NO</string>
+				</dict>
+				<dict>
+					<key>multitasking</key>
+					<string>NO</string>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSTitleValueCell</string>
+			<key>label</key>
+			<string>I do not recieve any of the profits from sales of LockInfo, so if you appreciate my work please feel free to donate.
+Thanks to Joaquin Alviz for making the Plugin&apos;s icons!</string>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<string>NO</string>
+				</dict>
+				<dict>
+					<key>multitasking</key>
+					<string>NO</string>
+				</dict>
+			</array>
+		</dict>
 	</array>
 	<key>title</key>
-	<string>Mail</string>
+	<string>Facebook</string>
 </dict>
 </plist>

@@ -25,19 +25,13 @@
 	
 		// We obtain these from the provider.
 		// These may be either request token (oauth 1.0a 6.1.2) or access token (oauth 1.0a 6.3.2);
-		// determine semantics with oauth_token_authorized and call synchronousVerifyCredentials
-		// if you want to be really sure.
+		// determine semantics with oauth_token_authorized.
 		*access_token,
 		*oauth_token,
-		*oauth_token_secret,	
-		
-		// From Facebook. May or may not be applicable to other providers.
-		*user_id,
-		*screen_name;
+    *oauth_token_secret;	
 	
 	// YES if this token has been authorized and can be used for production calls.
-	// You need to save and load the state of this yourself, but you don't need to
-	// modify it during runtime.
+	// Don't access directly; use the authorized method to get the current state.
 	BOOL oauth_token_authorized;	
 }
 
@@ -57,7 +51,5 @@
 @property (copy) NSString *access_token;
 @property (copy) NSString *oauth_token;
 @property (copy) NSString *oauth_token_secret;
-@property (copy) NSString *user_id;
-@property (copy) NSString *screen_name;
 
 @end

@@ -8,6 +8,7 @@
 #import "FacebookAuth.h"
 #import "KeychainUtils.h"
 #import <CommonCrypto/CommonHMAC.h>
+#import "FacebookAuthPrivate.h"
 
 @interface NSString (FacebookAuthAdditions)
 
@@ -64,20 +65,15 @@
 
 @end
 
-static NSString* CONSUMER_KEY = @"";
-static NSString* CONSUMER_SECRET  = @"";
-
 @implementation FacebookAuth
 
 @synthesize access_token;
 @synthesize oauth_token;
 @synthesize oauth_token_secret;
 @synthesize oauth_token_authorized;
-@synthesize user_id;
-@synthesize screen_name;
 
 #pragma mark -
-#pragma mark Init and dealloc
+#pragma mark init and dealloc
 
 /**
  * Initialize an OAuth context object with a given consumer key and secret. These are immutable as you
@@ -91,8 +87,6 @@ static NSString* CONSUMER_SECRET  = @"";
 		oauth_signature_method = @"HMAC-SHA1";
 		oauth_version = @"1.0";
 		srandom(time(NULL)); // seed the random number generator, used for generating nonces
-		self.user_id = @"";
-		self.screen_name = @"";
 
 		NSError* error;
 		self.access_token = [KeychainUtils getPasswordForUsername:@"OAuthToken" andServiceName:@"LockInfoFacebook" error:&error];
@@ -111,8 +105,6 @@ static NSString* CONSUMER_SECRET  = @"";
 	[oauth_consumer_secret release];
 	[oauth_token release];
 	[oauth_token_secret release];
-	[user_id release];
-	[screen_name release];
 	[super dealloc];
 }
 
@@ -149,13 +141,11 @@ static NSString* CONSUMER_SECRET  = @"";
 	self.oauth_token_authorized = NO;
 	self.oauth_token = @"";
 	self.oauth_token_secret = @"";
-	self.user_id = @"";
-	self.screen_name = @"";
 }
 
 - (NSString *) description {
 	return [NSString stringWithFormat:@"OAuth context object with consumer key \"%@\", token \"%@\". Authorized: %@",
-			oauth_consumer_key, self.oauth_token, self.oauth_token_authorized ? @"YES" : @"NO"]; 
+			oauth_consumer_key, self.oauth_token, [self authorized] ? @"YES" : @"NO"]; 
 }
 
 #pragma mark -
@@ -200,10 +190,9 @@ static NSString* CONSUMER_SECRET  = @"";
 	NSMutableURLRequest* request = [[[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]] autorelease];
 	self.access_token = @"";
 
-	NSLog(@"LI:Facebook: Access Token Request: %@", url);
 	NSError* error;
-        NSHTTPURLResponse* response;
-        NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+	NSHTTPURLResponse* response;
+	NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 	
 	NSString* responseString = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
 	NSArray *responseBodyComponents = [responseString componentsSeparatedByString:@"&"];
@@ -222,7 +211,6 @@ static NSString* CONSUMER_SECRET  = @"";
 	{
 		self.oauth_token_authorized = YES;
 		[KeychainUtils storeUsername:@"OAuthToken" andPassword:self.access_token forServiceName:@"LockInfoFacebook" updateExisting:YES error:&error];
-		NSLog(@"LI:Facebook: Access Token: %@", self.access_token);
 
 		return YES;
 	}

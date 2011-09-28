@@ -10,7 +10,7 @@
 			<key>default</key>
 			<string>YES</string>
 			<key>defaults</key>
-			<string>com.ashman.lockinfo.FacebookPlugin</string>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
 			<key>key</key>
 			<string>Enabled</string>
 			<key>label</key>
@@ -25,10 +25,10 @@
 		<dict>
 			<key>cell</key>
 			<string>PSLinkCell</string>
-			<key>label</key>
-			<string>Authentication</string>
 			<key>detail</key>
 			<string>FacebookAuthController</string>
+			<key>label</key>
+			<string>Authentication</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -70,11 +70,23 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>FacebookDeAuthController</string>
+			<key>label</key>
+			<string>Log Out</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSLinkListCell</string>
 			<key>default</key>
 			<string>5</string>
 			<key>defaults</key>
-			<string>com.ashman.lockinfo.FacebookPlugin</string>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
 			<key>detail</key>
 			<string>PSListItemsController</string>
 			<key>key</key>

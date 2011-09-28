@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>FacebookPlugin</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.ashman.lockinfo.FacebookPlugin</string>
+	<string>com.burgess.lockinfo.FacebookPlugin</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

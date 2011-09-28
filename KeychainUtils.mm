@@ -39,9 +39,6 @@ static NSString *SFHFKeychainUtilsErrorDomain = @"SFHFKeychainUtilsErrorDomain";
 #endif
  
 @implementation KeychainUtils
- 
-
- 
 
 #if __IPHONE_OS_VERSION_MIN_REQUIRED < 30000 && TARGET_IPHONE_SIMULATOR
 
