@@ -277,15 +277,18 @@
 	return (s.height + (2 * summary) + infoHeight + 10);
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfItemsInSection:(NSInteger)section 
+- (NSInteger)tableView:(LITableView *)tableView numberOfItemsInSection:(NSInteger)section 
 {
 	int max = [self maxPosts];
     
 	return (self.feedPosts.count > max ? max : self.feedPosts.count);
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section 
-{    
+- (NSInteger)tableView:(LITableView *)tableView numberOfRowsInSection:(NSInteger)section 
+{   
+    // Set here so theme is updated when table redraws
+    self.theme = tableView.theme; 
+    
 	return [self tableView:tableView numberOfItemsInSection:section] + (([self newPosts] || [self showNotifications]) ? 1 : 0);
 }
 
@@ -315,9 +318,6 @@
 		
         row--;
     }
-	
-	if (row == 0)
-		self.theme = tableView.theme; // Set here so theme is updated when table redraws
 	
 	FBPostCell* cell = (FBPostCell*)[tableView dequeueReusableCellWithIdentifier:@"PostCell"];
 	

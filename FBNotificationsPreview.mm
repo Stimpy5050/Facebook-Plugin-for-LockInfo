@@ -8,6 +8,7 @@
 @implementation FBNotificationsPreview
 
 @synthesize theme, notifications, delegate, lastUpdate;
+@synthesize tableView = _tableView;
 
 - (id)init
 {
@@ -33,8 +34,8 @@
 
 - (void)loadView
 {
-    
-	UITableView* tv = [[[UITableView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame] style:UITableViewStylePlain] autorelease];
+    CGRect frame = [[UIScreen mainScreen] applicationFrame];
+	UITableView* tv = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height) style:UITableViewStylePlain] autorelease];
 	tv.backgroundColor = [UIColor whiteColor];
 	tv.delegate = self;
     tv.dataSource = self;
@@ -43,7 +44,12 @@
     [pull setDelegate:self];
     [tv addSubview:pull];
     
-	self.view = tv;
+	UIView* v = [[[UIView alloc] initWithFrame:frame] autorelease];
+    [v addSubview:tv];
+    
+    self.tableView = tv;
+    self.view = v;
+    
 	[self performSelectorInBackground:@selector(updateNotifications) withObject:nil];
     
     // Not sure why this is required for some people but adding it anyway.
@@ -93,7 +99,7 @@
 {
     self.lastUpdate = [NSDate date];      
     [pull finishedLoading];
-    [(UITableView*)self.view reloadData];
+    [self.tableView reloadData];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -124,7 +130,7 @@
     
     NSString* notification = [elem objectForKey:@"title_text"];
 	CGSize s = [notification sizeWithFont:self.theme.detailStyle.font constrainedToSize:CGSizeMake(width - (15 + offset), 4000) lineBreakMode:UILineBreakModeWordWrap];
-    
+
 	return (s.height + summary + 6);
 }
 
@@ -197,7 +203,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [notifications count];
+    return [self.notifications count];
 }
 
 - (void)clearData

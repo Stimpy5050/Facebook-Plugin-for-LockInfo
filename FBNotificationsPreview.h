@@ -11,12 +11,14 @@
     id delegate;
     PullToRefreshView* pull;
     NSDate* lastUpdate;
+    UITableView* _tableView;
 }
 
 @property (nonatomic, retain) FBPreviewTheme* theme;
 @property (nonatomic, retain) NSMutableArray* notifications;
 @property (nonatomic, retain) NSDate* lastUpdate;
 @property (nonatomic, assign) id delegate;
+@property (nonatomic, retain) UITableView* tableView;
 
 - (void)updateNotifications;
 
