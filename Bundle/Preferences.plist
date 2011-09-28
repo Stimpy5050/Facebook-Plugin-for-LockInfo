@@ -39,11 +39,11 @@
 			<array>
 				<dict>
 					<key>wildcat</key>
-					<string>NO</string>
+					<false/>
 				</dict>
 				<dict>
 					<key>multitasking</key>
-					<string>NO</string>
+					<false/>
 				</dict>
 			</array>
 		</dict>
@@ -56,11 +56,11 @@
 			<array>
 				<dict>
 					<key>wildcat</key>
-					<string>NO</string>
+					<false/>
 				</dict>
 				<dict>
 					<key>multitasking</key>
-					<string>NO</string>
+					<false/>
 				</dict>
 			</array>
 		</dict>

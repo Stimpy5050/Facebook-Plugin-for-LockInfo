@@ -116,11 +116,11 @@ Thanks to Joaquin Alviz for making the Plugin&apos;s icons!</string>
 			<array>
 				<dict>
 					<key>wildcat</key>
-					<string>NO</string>
+					<false/>
 				</dict>
 				<dict>
 					<key>multitasking</key>
-					<string>NO</string>
+					<false/>
 				</dict>
 			</array>
 		</dict>
@@ -134,11 +134,11 @@ Thanks to Joaquin Alviz for making the Plugin&apos;s icons!</string>
 			<array>
 				<dict>
 					<key>wildcat</key>
-					<string>NO</string>
+					<false/>
 				</dict>
 				<dict>
 					<key>multitasking</key>
-					<string>NO</string>
+					<false/>
 				</dict>
 			</array>
 		</dict>
