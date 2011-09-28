@@ -178,7 +178,7 @@
             if (self.likeButtonDown)
                 [[[[FBSharedDataController sharedInstance] pluginImage:@"LikeButtonBackground"] stretchableImageWithLeftCapWidth:5 topCapHeight:5] drawInRect:CGRectMake(likeOffset, verticalOffset - 1, likeButtonSize.width + 4, likeButtonSize.height + 2)];
         
-            [likeButtonString drawInRect:CGRectMake(likeOffset + 2, verticalOffset, likeButtonSize.width, likeButtonSize.height) withLIStyle:((self.likeButtonDown) ? self.theme.likeStyleDown : self.theme.summaryStyle) lineBreakMode:UILineBreakModeTailTruncation];
+            [likeButtonString drawInRect:CGRectMake(likeOffset + 2, verticalOffset, likeButtonSize.width, likeButtonSize.height) withFont:((self.likeButtonDown) ? self.theme.likeStyleDown.font : self.theme.summaryStyle.font) lineBreakMode:UILineBreakModeTailTruncation];
             likeOffset += likeButtonSize.width + 8;
         }
         
@@ -200,7 +200,7 @@
                 likeString = [NSString stringWithFormat:@"%i %@ this.", otherLikes, ((otherLikes > 1) ? @"people like" : @"person likes")];
             CGSize likeSize = [likeString sizeWithFont:self.theme.detailStyle.font];
             int verticalOffset = ((r.size.height - likeSize.height) / 2);
-            [likeString drawInRect:CGRectMake(likeOffset + 18, verticalOffset, likeSize.width, likeSize.height) withLIStyle:self.theme.detailStyle lineBreakMode:UILineBreakModeTailTruncation];
+            [likeString drawInRect:CGRectMake(likeOffset + 18, verticalOffset, likeSize.width, likeSize.height) withFont:self.theme.detailStyle.font lineBreakMode:UILineBreakModeTailTruncation];
         }
     }
 }

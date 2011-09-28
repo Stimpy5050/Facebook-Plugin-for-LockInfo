@@ -45,12 +45,12 @@
 	int offset = (self.image == (id)[NSNull null] ? 0 : 25);
 	
 	CGSize s = [self.notification sizeWithFont:self.theme.detailStyle.font constrainedToSize:CGSizeMake(r.size.width - (15 + offset), 4000) lineBreakMode:UILineBreakModeWordWrap];
-	[self.notification drawInRect:CGRectMake(10 + offset, 1, s.width, s.height + 1) withLIStyle:self.theme.detailStyle lineBreakMode:UILineBreakModeWordWrap];
+	[self.notification drawInRect:CGRectMake(10 + offset, 1, s.width, s.height + 1) withFont:self.theme.detailStyle.font lineBreakMode:UILineBreakModeWordWrap];
     
     LIStyle* timeStyle = [self.theme.summaryStyle copy];
 	timeStyle.font = [timeStyle.font fontWithSize:timeStyle.font.pointSize - 3];
     CGSize timeSize = [self.time sizeWithFont:timeStyle.font];
-    [self.time drawInRect:CGRectMake(10 + offset, (s.height + 2), timeSize.width, timeSize.height) withLIStyle:timeStyle lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentLeft];
+    [self.time drawInRect:CGRectMake(10 + offset, (s.height + 2), timeSize.width, timeSize.height) withFont:timeStyle.font lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentLeft];
     
     [timeStyle release];
     

@@ -13,6 +13,7 @@ typedef enum {
 {
     id delegate;
     UIView* optionsContainer;
+    UIImageView* backgroundImage;
     UIButton* likeButton;
     UIButton* commentButton;
     CGPoint arrowPoint;
@@ -20,6 +21,7 @@ typedef enum {
 }
 
 @property (nonatomic, assign) id delegate;
+@property (nonatomic, retain) UIImageView* backgroundImage;
 @property (nonatomic, retain) UIView* optionsContainer;
 @property (nonatomic, retain) UIButton* likeButton;
 @property (nonatomic, retain) UIButton* commentButton;

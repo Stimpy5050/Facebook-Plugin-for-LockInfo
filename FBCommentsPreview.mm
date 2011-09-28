@@ -82,8 +82,6 @@
 	self.textView = txt;
     self.tableView = tv;
     self.view = v;
-    
-    [self resizeViews];
 }
 
 - (void)previewDidShow
@@ -155,6 +153,9 @@
 
 - (void)sendButtonPressed
 {
+    if ([self.textView.text length] == 0)
+        return;
+    
 	[self sendComment:self.textView.text];
     self.textView.text = @"";
     self.navigationItem.leftBarButtonItem = nil;
@@ -200,11 +201,6 @@
 - (void)textViewDidChange:(UITextView *)textView
 {
     [self resizeViews];
-    if ([textView.text length] == 0)
-    {
-        NSRange range = NSMakeRange(0,1);
-        [textView scrollRangeToVisible:range];
-    }
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text

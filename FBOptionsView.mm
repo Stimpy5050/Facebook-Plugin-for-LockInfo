@@ -4,7 +4,7 @@
 
 @implementation FBOptionsView
 
-@synthesize delegate, optionsContainer, likeButton, commentButton, buttonTypes, arrowPoint;
+@synthesize delegate, optionsContainer, likeButton, commentButton, buttonTypes, arrowPoint, backgroundImage;
 
 - (id)init
 { 
@@ -15,8 +15,8 @@
         self.optionsContainer = [[[UIView alloc] initWithFrame:CGRectMake(210, 50, 200, 44)] autorelease];
         self.optionsContainer.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
-        UIImageView* backgroundImage = [[[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 200, 44)] autorelease];
-        backgroundImage.image = [[[FBSharedDataController sharedInstance] pluginImage:@"PopoverBackground"] stretchableImageWithLeftCapWidth:25 topCapHeight:20];
+        self.backgroundImage = [[[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 200, 44)] autorelease];
+        self.backgroundImage.image = [[[FBSharedDataController sharedInstance] pluginImage:@"PopoverBackground"] stretchableImageWithLeftCapWidth:25 topCapHeight:20];
         [self.optionsContainer addSubview:backgroundImage];
         
         self.likeButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
@@ -84,9 +84,27 @@
 - (void)setArrowPoint:(CGPoint)point
 {
 	arrowPoint = point;
-    self.frame = [[UIScreen mainScreen] bounds];
-    self.optionsContainer.frame = CGRectMake(arrowPoint.x - 200, arrowPoint.y-22, 200, 44);
     [self.optionsContainer setNeedsLayout];
+}
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	//NOOP
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    //NOOP
+}
+
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)evet
+{
+    //NOOP
+}
+
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    //NOOP
 }
 
 - (UIView*)hitTest:(CGPoint)point withEvent:(UIEvent *)event 
@@ -111,6 +129,7 @@
 			self.commentButton.hidden = NO;
 			self.likeButton.frame = CGRectMake(5, 7, 70, 30);
 			self.commentButton.frame = CGRectMake(80, 7, 100, 30);
+            self.backgroundImage.frame = CGRectMake(0, 0, 200, 44);
 			self.optionsContainer.frame = CGRectMake(self.arrowPoint.x - 200, self.arrowPoint.y-22, 200, 44);
 			break;
 			
@@ -118,6 +137,7 @@
 			self.likeButton.hidden = YES;
 			self.commentButton.hidden = NO;
 			self.commentButton.frame = CGRectMake(5, 7, 100, 30);
+            self.backgroundImage.frame = CGRectMake(0, 0, 125, 44);
 			self.optionsContainer.frame = CGRectMake(self.arrowPoint.x - 125, self.arrowPoint.y-22, 125, 44);
 			break;
 		
@@ -126,6 +146,7 @@
 			self.likeButton.hidden = NO;
 			self.commentButton.hidden = YES;
 			self.likeButton.frame = CGRectMake(5, 7, 70, 30);
+            self.backgroundImage.frame = CGRectMake(0, 0, 95, 44);
 			self.optionsContainer.frame = CGRectMake(self.arrowPoint.x - 95, self.arrowPoint.y-22, 95, 44);
 			break;
             
@@ -135,6 +156,7 @@
 			self.commentButton.hidden = NO;
 			self.likeButton.frame = CGRectMake(5, 7, 70, 30);
 			self.commentButton.frame = CGRectMake(80, 7, 100, 30);
+            self.backgroundImage.frame = CGRectMake(0, 0, 200, 44);
 			self.optionsContainer.frame = CGRectMake(self.arrowPoint.x - 200, self.arrowPoint.y-22, 200, 44);
             break;
             
@@ -143,6 +165,7 @@
 			self.likeButton.hidden = NO;
 			self.commentButton.hidden = YES;
 			self.likeButton.frame = CGRectMake(5, 7, 70, 30);
+            self.backgroundImage.frame = CGRectMake(0, 0, 95, 44);
 			self.optionsContainer.frame = CGRectMake(self.arrowPoint.x - 95, self.arrowPoint.y-22, 95, 44);
 			break;
             

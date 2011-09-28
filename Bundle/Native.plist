@@ -96,7 +96,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>I do not recieve any of the profits from sales of LockInfo, so if you appreciate my work please feel free to donate.
+			<string>I, Conor Burgess (Burgch), do not recieve any of the profits from sales of LockInfo, so if you appreciate my work please feel free to donate.
 Thanks to Joaquin Alviz for making the Plugin&apos;s icons!</string>
 		</dict>
 		<dict>
@@ -128,7 +128,7 @@ Thanks to Joaquin Alviz for making the Plugin&apos;s icons!</string>
 			<key>cell</key>
 			<string>PSTitleValueCell</string>
 			<key>label</key>
-			<string>I do not recieve any of the profits from sales of LockInfo, so if you appreciate my work please feel free to donate.
+			<string>I, Conor Burgess (Burgch), do not recieve any of the profits from sales of LockInfo, so if you appreciate my work please feel free to donate.
 Thanks to Joaquin Alviz for making the Plugin&apos;s icons!</string>
 			<key>requiredCapabilities</key>
 			<array>

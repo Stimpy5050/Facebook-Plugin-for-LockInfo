@@ -518,7 +518,7 @@ MSHook(BOOL, clickedMenuButton, id self, SEL sel)
 
 - (id)loadFBData:(NSString*) url
 {
-	FacebookAuth* auth = [[[FacebookAuth alloc] init] autorelease];
+    FacebookAuth* auth = [[[FacebookAuth alloc] init] autorelease];
 	if (!auth.authorized)
 	{
 		DLog(@"LI:Facebook: Facebook client is not authorized!");
@@ -545,7 +545,7 @@ MSHook(BOOL, clickedMenuButton, id self, SEL sel)
 		DLog(@"LI: FB: Loaded Data: %@", obj);
         return obj;
 	}
-
+    
 	return nil;
 }
 

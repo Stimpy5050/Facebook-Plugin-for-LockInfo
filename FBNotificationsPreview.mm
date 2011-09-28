@@ -95,7 +95,7 @@
     NSURL* url = [NSURL URLWithString:@"fb://notifications"];
     
     if (![[UIApplication sharedApplication] canOpenURL:url])
-        url = [NSURL URLWithString:@"htpp://www.facebook.com/notifications"];
+        url = [NSURL URLWithString:@"http://www.facebook.com/notifications"];
     
 	if ([[[self delegate] delegate] respondsToSelector:@selector(openURL:)])
 		[[[self delegate] delegate] openURL:url];
