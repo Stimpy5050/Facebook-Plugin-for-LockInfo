@@ -39,12 +39,12 @@ Bundle=com.burgess.lockinfo.$(Name).bundle
 
 all:	package
 
-$(Name):	KeychainUtils.o FacebookAuth.o FacebookAuthController.o FacebookDeAuthController.o FBSingletons.o FBDownload.o FBOptionsView.o FBPreview.o FBPreviewController.o FBCommentsPreview.o FBNewPostPreview.o FBNotificationsPreview.o FBCommentCell.o FBPostCell.o FBNotificationCell.o FBButtonCell.o FBLikesCell.o FBLoadingCell.o FBTextView.o UIImage-FBAdditions.o PullToRefreshView.o $(Name).o
+$(Name):	KeychainUtils.o FacebookAuth.o FacebookAuthController.o FacebookDeAuthController.o FacebookDonate.o FBSingletons.o FBDownload.o FBOptionsView.o FBPreview.o FBPreviewController.o FBCommentsPreview.o FBNewPostPreview.o FBNotificationsPreview.o FBCommentCell.o FBPostCell.o FBNotificationCell.o FBButtonCell.o FBLikesCell.o FBLoadingCell.o FBTextView.o UIImage-FBAdditions.o PullToRefreshView.o $(Name).o
 		$(LD) $(LDFLAGS) -bundle -o $@ $^
 		ldid -S $@
 		chmod 755 $@
 
-FB: 		KeychainUtils.o FacebookAuth.o FacebookAuthController.o FacebookDeAuthController.o FBSingletons.o FBDownload.o FBOptionsView.o FBPreview.o FBPreviewController.o FBCommentsPreview.o FBNewPostPreview.o FBNotificationsPreview.o FBCommentCell.o FBPostCell.o FBNotificationCell.o FBButtonCell.o FBLikesCell.o FBLoadingCell.o FBTextView.o UIImage-FBAdditions.o PullToRefreshView.o $(Name).o
+FB: 		KeychainUtils.o FacebookAuth.o FacebookAuthController.o FacebookDeAuthController.o FacebookDonate.o FBSingletons.o FBDownload.o FBOptionsView.o FBPreview.o FBPreviewController.o FBCommentsPreview.o FBNewPostPreview.o FBNotificationsPreview.o FBCommentCell.o FBPostCell.o FBNotificationCell.o FBButtonCell.o FBLikesCell.o FBLoadingCell.o FBTextView.o UIImage-FBAdditions.o PullToRefreshView.o $(Name).o
 		$(LD) $(LDFLAGS) -bundle -o FacebookPlugin $^
 		ldid -S FacebookPlugin
 		chmod 755 FacebookPlugin
