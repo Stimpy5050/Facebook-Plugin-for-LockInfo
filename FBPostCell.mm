@@ -177,6 +177,7 @@
     int topOfInfo = summary + s.height + timeSize.height + 4;
     timeStyle.textColor = [UIColor colorWithRed:87.0/255.0 green:107.0/255.0 blue:149.0/255.0 alpha:1.0];
     
+    [timeStyle.textColor set];
     if ((self.noLikes > 0) && (self.noComments > 0))
     {
         CGSize likeSize = [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
@@ -186,8 +187,8 @@
         [[[FBSharedDataController sharedInstance] pluginImage:@"LikeIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 4, 15, 14)];
         [[[FBSharedDataController sharedInstance] pluginImage:@"CommentsIcon"] drawInRect:CGRectMake(leftOffset + 36 + likeSize.width, topOfInfo + 3, 15, 19)];
         [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (likeSize.height / 2)), likeSize.width, likeSize.height) 
-                                                              withLIStyle:timeStyle lineBreakMode:UILineBreakModeTailTruncation];
-        [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 54 + likeSize.width, topOfInfo + (int)(12 - (commentSize.height / 2)), commentSize.width, commentSize.height) withLIStyle:timeStyle lineBreakMode:UILineBreakModeClip];
+                                                              withFont:timeStyle.font lineBreakMode:UILineBreakModeTailTruncation];
+        [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 54 + likeSize.width, topOfInfo + (int)(12 - (commentSize.height / 2)), commentSize.width, commentSize.height) withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
     }
     else if (self.noLikes > 0)
     {
@@ -196,7 +197,7 @@
                                                                                     drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 30 +  likeSize.width, 25)];
         [[[FBSharedDataController sharedInstance] pluginImage:@"LikeIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 4, 15, 14)];
         [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (likeSize.height / 2)), likeSize.width, likeSize.height) 
-                                                              withLIStyle:timeStyle lineBreakMode:UILineBreakModeClip];
+                                                              withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
     }
     else if (self.noComments > 0)
     {
@@ -204,7 +205,7 @@
         [[[[FBSharedDataController sharedInstance] pluginImage:@"PostInfoBackground"] stretchableImageWithLeftCapWidth:5 topCapHeight:5] 
                                                                                     drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 30 +  commentSize.width, 25)];
         [[[FBSharedDataController sharedInstance] pluginImage:@"CommentsIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 3, 15, 19)];
-        [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (commentSize.height / 2)), commentSize.width, commentSize.height) withLIStyle:timeStyle lineBreakMode:UILineBreakModeClip];
+        [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (commentSize.height / 2)), commentSize.width, commentSize.height) withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
     }
                            
     [timeStyle release];

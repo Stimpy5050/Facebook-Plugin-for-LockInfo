@@ -111,7 +111,7 @@
 
 - (void)sendButtonPressed
 {
-    if ([self.previewTextView.text lenght] == 0)
+    if ([self.previewTextView.text length] == 0)
         return;
     
     if ([[[self delegate] delegate] respondsToSelector:@selector(resignKeyboard)])

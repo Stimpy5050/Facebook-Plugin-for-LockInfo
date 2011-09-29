@@ -69,6 +69,7 @@
         NSString* text = [NSString stringWithFormat:@"Load all %i comments", self.noComments];
 	
         CGSize s = [text sizeWithFont:self.theme.summaryStyle.font constrainedToSize:CGSizeMake(r.size.width - 10, 4000) lineBreakMode:UILineBreakModeWordWrap];
+        [self.theme.summaryStyle.textColor set];
         [text drawInRect:CGRectMake((int)((r.size.width - s.width) / 2), (int)((r.size.height - s.height) / 2), s.width, s.height) withFont:self.theme.summaryStyle.font lineBreakMode:UILineBreakModeWordWrap];
     }
 }

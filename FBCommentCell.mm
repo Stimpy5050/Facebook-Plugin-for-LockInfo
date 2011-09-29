@@ -166,12 +166,15 @@
 	int summary = self.theme.summaryStyle.font.pointSize + 3;
     
 	int offset = (self.image == (id)[NSNull null] ? 0 : 25);
+    [self.theme.summaryStyle.textColor set];
 	[self.name drawInRect:CGRectMake(10 + offset, 0, (r.size.width - (15 + offset)), summary) withFont:self.theme.summaryStyle.font lineBreakMode:UILineBreakModeTailTruncation];
     
 	CGSize s = [self.comment sizeWithFont:self.theme.detailStyle.font constrainedToSize:CGSizeMake(r.size.width - (15 + offset), 4000) lineBreakMode:UILineBreakModeWordWrap];
+    [self.theme.detailStyle.textColor set];
 	[self.comment drawInRect:CGRectMake(10 + offset, summary, s.width, s.height + 1) withFont:self.theme.detailStyle.font lineBreakMode:UILineBreakModeWordWrap];
     
     CGSize timeSize = [self.time sizeWithFont:self.theme.timeStyle.font];
+    [self.theme.timeStyle.textColor set];
     [self.time drawInRect:CGRectMake(10 + offset, (summary + s.height + 2), timeSize.width, timeSize.height) withFont:self.theme.timeStyle.font lineBreakMode:UILineBreakModeClip];
 	
     int likeOffset = offset + timeSize.width + 15;
@@ -179,7 +182,6 @@
     if (self.changeInProgress)
 		self.activity.frame = CGRectMake(likeOffset + 5, summary + s.height + 2, timeSize.height, timeSize.height);
     else {
-    
         if (self.allowLikes)
         {
             NSString* likeButtonString = ((self.userLikes) ? @"Unlike"  : @"Like");
@@ -187,8 +189,11 @@
         
             if (self.likeButtonDown)
                 [[[[FBSharedDataController sharedInstance] pluginImage:@"LikeButtonBackground"] stretchableImageWithLeftCapWidth:5 topCapHeight:5] drawInRect:CGRectMake(likeOffset, summary + s.height + 3, likeButtonSize.width + 4, likeButtonSize.height + 2)];
-        
-            [likeButtonString drawInRect:CGRectMake(likeOffset + 2, summary + s.height + 4, likeButtonSize.width, likeButtonSize.height) withFont:((self.likeButtonDown) ? self.theme.likeStyleDown.font : self.theme.likeStyle.font) lineBreakMode:UILineBreakModeTailTruncation];
+            
+            if (self.likeButtonDown) [self.theme.likeStyleDown.textColor set];
+            else [self.theme.likeStyle.textColor set];
+            
+            [likeButtonString drawInRect:CGRectMake(likeOffset + 2, summary + s.height + 4, likeButtonSize.width, likeButtonSize.height) withFont:self.theme.likeStyle.font lineBreakMode:UILineBreakModeTailTruncation];
 
             likeOffset += likeButtonSize.width + 7;
         }
@@ -197,6 +202,7 @@
         {
             [[[FBSharedDataController sharedInstance] pluginImage:@"LikeIcon"] drawInRect:CGRectMake(likeOffset, summary + s.height + 2, 15, 14)];
             CGSize likeSize = [[NSString stringWithFormat:@"%i Like%@", self.likes, ((self.likes > 1) ? @"s" : @"")] sizeWithFont:self.theme.likeStyle.font];
+            [self.theme.likeStyle.textColor set];
             [[NSString stringWithFormat:@"%i Like%@", self.likes, ((self.likes > 1) ? @"s" : @"")] drawInRect:CGRectMake(likeOffset + 18, summary + s.height + 4, likeSize.width, likeSize.height) withFont:self.theme.likeStyle.font lineBreakMode:UILineBreakModeTailTruncation];
         }
     }
