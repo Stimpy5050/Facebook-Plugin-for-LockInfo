@@ -33,9 +33,12 @@
 - (void)loadView
 {
 	UIView* v = [[[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]] autorelease];
+    v.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
+    v.autoresizesSubviews = YES;
 	v.backgroundColor = [UIColor blackColor];
 	
 	UITextView* tv = [[[UITextView alloc] initWithFrame:v.bounds] autorelease];
+    tv.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
 	tv.backgroundColor = [UIColor blackColor];
 	tv.editable = YES;
 	tv.keyboardAppearance = UIKeyboardAppearanceAlert;

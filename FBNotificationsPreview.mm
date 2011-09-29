@@ -36,6 +36,7 @@
 {
     CGRect frame = [[UIScreen mainScreen] applicationFrame];
 	UITableView* tv = [[[UITableView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width, frame.size.height) style:UITableViewStylePlain] autorelease];
+    tv.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
 	tv.backgroundColor = [UIColor whiteColor];
 	tv.delegate = self;
     tv.dataSource = self;
@@ -45,6 +46,8 @@
     [tv addSubview:pull];
     
 	UIView* v = [[[UIView alloc] initWithFrame:frame] autorelease];
+    v.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
+    v.autoresizesSubviews = YES;
     [v addSubview:tv];
     
     self.tableView = tv;

@@ -57,6 +57,7 @@
 	CGRect tableFrame = CGRectMake(0, 0, frame.size.width, frame.size.height - 48);
 	CGRect textViewFrame = CGRectMake(5, frame.size.height - 43, frame.size.width - 10, 38);
 	UITableView* tv = [[[UITableView alloc] initWithFrame:tableFrame style:UITableViewStylePlain] autorelease];
+    tv.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
 	tv.backgroundColor = [UIColor whiteColor];
 	tv.delegate = self;
     tv.dataSource = self;
@@ -66,6 +67,7 @@
     [tv addSubview:pull];
     
     FBTextView* txt = [[[FBTextView alloc] initWithFrame:textViewFrame] autorelease];
+    txt.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
 	txt.placeholder = @"Write a Comment...";
     txt.placeholderColour = [UIColor lightGrayColor];
 	txt.layer.cornerRadius = 5;
@@ -76,6 +78,8 @@
 
 	UIView* v = [[[UIView alloc] initWithFrame:frame] autorelease];
     v.backgroundColor = [UIColor lightGrayColor];
+    v.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleTopMargin;
+    v.autoresizesSubviews = YES;
 	[v addSubview:txt];
 	[v addSubview:tv];
 	
@@ -151,7 +155,6 @@
     	[self.loadingDelegate performSelectorOnMainThread:@selector(finishedLoading) withObject:nil waitUntilDone:NO];
     
 	self.postingComment = NO;
-	[self.tableView reloadData];
 	
 	[pool drain];
 }
