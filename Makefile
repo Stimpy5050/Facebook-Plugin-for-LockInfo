@@ -1,14 +1,13 @@
-CC=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-gcc-4.2.1
-CPP=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-g++-4.2.1
+CC=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-llvm-gcc-4.2
+CPP=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/arm-apple-darwin10-llvm-g++-4.2
 LD=$(CC)
 
-SDKVER=4.3
+SDKVER=5.0
 SDK=/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS$(SDKVER).sdk
 
 LDFLAGS= -framework Foundation \
 	-framework UIKit \
 	-framework IOKit \
-	-framework JSON \
 	-framework Security \
 	-framework QuartzCore \
 	-framework CoreFoundation \
@@ -29,8 +28,8 @@ CFLAGS= -I/var/include \
   -I../../.. \
   -I"$(SDK)/usr/include" \
   -I"/Developer/Platforms/iPhoneOS.platform/Developer/usr/include" \
-  -I"/Developer/Platforms/iPhoneOS.platform/Developer/usr/lib/gcc/arm-apple-darwin10/4.2.1/include" \
-  -DDEBUG -Diphoneos_version_min=2.0 -g -objc-exceptions \
+  -I"/Developer/Platforms/iPhoneOS.platform/Developer/usr/llvm-gcc-4.2/lib/gcc/arm-apple-darwin10/4.2.1/include" \
+  -DDEBUG -Diphoneos_version_min=3.0 -g -objc-exceptions \
   -F"$(SDK)/System/Library/Frameworks" \
   -F"$(SDK)/System/Library/PrivateFrameworks"
 

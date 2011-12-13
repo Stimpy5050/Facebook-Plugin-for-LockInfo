@@ -1,4 +1,5 @@
 #include <objc/runtime.h>
+#include <dlfcn.h>
 #import <Substrate/substrate.h>
 #import <sqlite3.h>
 #import <SpringBoard/SBTelephonyManager.h>
@@ -9,6 +10,10 @@
 #import "FBPreview.h"
 #import "FBSingletons.h"
 #import "FBCommon.h"
+
+static BOOL iOS5;
+static void* json_library;
+static Class json_class = NSClassFromString(@"JSON");
 
 @implementation FacebookPlugin
 
@@ -420,8 +425,23 @@ MSHook(BOOL, clickedMenuButton, id self, SEL sel)
 	return _clickedMenuButton(self, sel);
 }
 
+int main(int argc, char *argv[])
+{
+}
+
 - (id)initWithPlugin:(LIPlugin*) plugin
 {
+    iOS5 = NSClassFromString(@"SBNewsstand") != nil;
+    
+    if (!iOS5)
+    {
+        json_library = dlopen("/System/Library/PrivateFrameworks/JSON.framework/JSON", RTLD_LAZY);
+        json_class = NSClassFromString(@"JSON");
+    
+        if (json_library == NULL)
+            DLog(@"LI: FB: Error loading JSON Library");
+    }
+    
 	self = [super init];
 	self.plugin = plugin;
     
@@ -454,6 +474,9 @@ MSHook(BOOL, clickedMenuButton, id self, SEL sel)
 
 - (void)dealloc
 {
+    if (json_library != NULL)
+        dlclose(json_library);
+    
 	[lock release];
     [previewController release];
     [feedPosts release];
@@ -541,7 +564,12 @@ MSHook(BOOL, clickedMenuButton, id self, SEL sel)
 
 	if (data)
 	{
-		id obj = [JSON objectWithData:data options:0 error:&error];
+        id obj;
+        
+        if (iOS5)
+            obj = [NSClassFromString(@"NSJSONSerialization") JSONObjectWithData:data options:0 error:&error];
+        else
+            obj = [json_class objectWithData:data options:0 error:&error];
 		DLog(@"LI: FB: Loaded Data: %@", obj);
         return obj;
 	}
@@ -568,7 +596,13 @@ MSHook(BOOL, clickedMenuButton, id self, SEL sel)
     NSString* nfQuery = [NSString stringWithFormat:@"SELECT post_id, actor_id, target_id, created_time, message, comments, likes FROM stream WHERE filter_key in (SELECT filter_key FROM stream_filter WHERE uid=me() AND type='newsfeed') AND is_hidden = 0 AND strlen(message) != 0 AND attachment.media='' AND strlen(attachment.name)=0 AND strlen(attachment.href)=0 AND strlen(attachment.description)=0 LIMIT %d", noPosts];
     NSString* userQuery = @"SELECT id, name FROM profile WHERE id IN (SELECT actor_id FROM #NewsFeed) OR id IN (SELECT comments.comment_list.fromid FROM #NewsFeed) OR id IN (SELECT target_id FROM #NewsFeed)";
     NSArray* multiQuery = [NSDictionary dictionaryWithObjectsAndKeys:nfQuery, @"NewsFeed", userQuery, @"Users", nil];
-    NSString* query = [JSON stringWithObject:multiQuery options:0 error:&error];
+    
+    NSString* query;
+    
+    if (iOS5)
+        query = [[NSString alloc] initWithData:[NSClassFromString(@"NSJSONSerialization") dataWithJSONObject:multiQuery options:0 error:&error] encoding:NSUTF8StringEncoding];
+    else
+        query = [json_class stringWithObject:multiQuery options:0 error:&error];
     
     if (error)
         DLog(@"LI: Facebook: JSON error: %@", error);

@@ -80,6 +80,7 @@
 
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
+    NSLog(@"LI: FB: Auth Loading URL: %@", request.URL.absoluteString);
 	if ([request.URL.host isEqualToString:@"lockinfo.ashman.com"])
 	{	
 		if ([self.auth authorizeFacebookCode:[request.URL.query substringFromIndex:5]])
