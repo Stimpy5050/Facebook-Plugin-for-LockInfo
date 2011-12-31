@@ -11,7 +11,7 @@
 
 @implementation FBCommentsPreview
 
-@synthesize theme, comments, postID, name, time, image, post, delegate, loadingDelegate, noComments, noLikes, userLikes, streamRowIndex, allowLikes, allowComments, showingKeyboard, postingComment, lastUpdate, keyboardHeight, shouldLoadWithKeyboard;
+@synthesize theme, comments, postID, name, time, image, post, delegate, loadingDelegate, noComments, noLikes, userLikes, streamRowIndex, allowLikes, allowComments, showingKeyboard, postingComment, lastUpdate, keyboardHeight, shouldLoadWithKeyboard, loadingData, pendingClear;
 @synthesize tableView = _tableView;
 @synthesize textView = _textView;
 
@@ -25,10 +25,12 @@
         self.navigationItem.title = localize(@"Comments");
         self.navigationItem.leftBarButtonItem = nil;
         self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc] initWithTitle:@"Done" style:UIBarButtonItemStyleBordered target:self.delegate action:@selector(clearPreview)] autorelease];
-		self.comments = [NSMutableArray arrayWithCapacity:1];
+		self.comments = [NSMutableArray arrayWithCapacity:0];
 		self.showingKeyboard = NO;
         self.keyboardHeight = 0.0;
         self.shouldLoadWithKeyboard = NO;
+        self.loadingData = NO;
+        self.pendingClear = NO;
     }
     
     return self;
@@ -122,6 +124,7 @@
 - (void)sendComment:(NSString*)comment
 {
 	self.postingComment = YES;
+    self.loadingData = YES;
 	[self insertLoadingCellAtLastIndex];
 	[self performSelectorInBackground:@selector(sendCommentInBackground:) withObject:comment];
 }
@@ -139,10 +142,11 @@
     	NSString* fullURL = [[NSString stringWithFormat:@"%@&access_token=%@", url, auth.access_token] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:fullURL]];
     	[request setHTTPMethod:@"POST"];
-          
+        DLog(@"LI: FB: Posting comment: %@", fullURL);  
     	NSError* error = nil;
     	NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:NULL error:&error];
-		
+        DLog(@"LI: FB: Data from comment: %@", data);
+        
 		if (error)
 			DLog(@"LI: FB: Error commenting on status");
 		else
@@ -150,11 +154,6 @@
     }
     else
     	DLog(@"LI: FB: Auth not authorised to comment on status");
-
-	if ([self.loadingDelegate respondsToSelector:@selector(finishedLoading)])
-    	[self.loadingDelegate performSelectorOnMainThread:@selector(finishedLoading) withObject:nil waitUntilDone:NO];
-    
-	self.postingComment = NO;
 	
 	[pool drain];
 }
@@ -294,6 +293,8 @@
 
 - (void)reloadComments
 {
+    self.loadingData = YES;
+    
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
     
     if (SBTelephonyManager* mgr = [objc_getClass("SBTelephonyManager") sharedTelephonyManager])
@@ -301,6 +302,11 @@
 		if (mgr.inCall || mgr.incomingCallExists)
 		{
 			DLog(@"LI:Facebook: No data connection available.");
+            
+            self.loadingData = NO;
+            if (self.pendingClear)
+                [self performSelectorOnMainThread:@selector(clearData) withObject:nil waitUntilDone:NO];
+                
 			return;
 		}
 	}
@@ -310,7 +316,7 @@
     NSString* objectID = [[self.postID componentsSeparatedByString:@"_"] lastObject];
     NSString* query = [NSString stringWithFormat:@"SELECT id, time, text, fromid, likes, user_likes FROM comment WHERE object_id=%@ AND is_private = 0", objectID];
     
-	NSArray* newComments = (NSArray*)[[[self delegate] delegate] loadFBData:[NSString stringWithFormat:@"https://api.facebook.com/method/fql.query?query=%@&format=JSON", [query stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	NSArray* newComments = (NSArray*)[[[[self delegate] delegate] loadFBData:[NSString stringWithFormat:@"https://graph.facebook.com/fql?q=%@&format=JSON", [query stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] objectForKey:@"data"];
     
     DLog(@"LI: FB: Comments: %@", newComments);
     
@@ -330,7 +336,7 @@
     }
     
     NSString* likesQuery = [NSString stringWithFormat:@"SELECT user_id FROM like WHERE object_id=%@", objectID];
-    NSArray* newLikes = (NSArray*)[[[self delegate] delegate] loadFBData:[NSString stringWithFormat:@"https://api.facebook.com/method/fql.query?query=%@&format=JSON", [likesQuery stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    NSArray* newLikes = (NSArray*)[[[[self delegate] delegate] loadFBData:[NSString stringWithFormat:@"https://graph.facebook.com/fql?q=%@&format=JSON", [likesQuery stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] objectForKey:@"data"];
     
     DLog(@"LI: FB: Likes: %@", newLikes);
 
@@ -348,9 +354,11 @@
     self.noLikes = [newLikes count];
     self.userLikes = newUserLikes;
     
+    self.loadingData = NO;
+
     [self performSelectorOnMainThread:@selector(updateStreamLikes) withObject:nil waitUntilDone:NO];
     [self performSelectorOnMainThread:@selector(finishedLoadingComments) withObject:nil waitUntilDone:NO];
-    
+
     [pool drain];
 }
 
@@ -358,6 +366,11 @@
 {
     if ([self.loadingDelegate respondsToSelector:@selector(finishedLoading)])
     	[self.loadingDelegate finishedLoading];
+    
+    if (self.pendingClear)
+        [self performSelectorOnMainThread:@selector(clearData) withObject:nil waitUntilDone:NO];
+    
+	self.postingComment = NO;
     
     self.lastUpdate = [NSDate date];      
     [pull finishedLoading];
@@ -376,7 +389,7 @@
 		
 	[[self.comments objectAtIndex:index] setObject:[NSNumber numberWithInt:numberLikes] forKey:@"likes"];
 	
-	[self updateStreamComments];
+	[self performSelectorOnMainThread:@selector(updateStreamComments) withObject:nil waitUntilDone:NO];
 }
 
 - (void)setUserLikesPost:(BOOL)likes
@@ -388,7 +401,7 @@
 	else
 		self.noLikes--;
 		
-	[self updateStreamLikes];
+	[self performSelectorOnMainThread:@selector(updateStreamLikes) withObject:nil waitUntilDone:NO];
 }
 
 - (void)updateStreamComments
@@ -420,7 +433,7 @@
 - (void)insertLoadingCellAtLastIndex
 {
     NSIndexPath* newRow = [NSIndexPath indexPathForRow:([self.comments count] + 1 + (([self.comments count] == self.noComments) ? 0 : 1) + 1) inSection:0];
-    
+    DLog(@"LI: FB: newRow: %@", newRow);
     [self.tableView insertRowsAtIndexPaths:[NSArray arrayWithObject:newRow] withRowAnimation:UITableViewRowAnimationBottom];
     
     [self scrollToLastRow];
@@ -436,6 +449,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 	[self performSelectorInBackground:@selector(reloadComments) withObject:nil];
 	if ([self.loadingDelegate respondsToSelector:@selector(startLoading)])
     	[self.loadingDelegate startLoading];
@@ -473,13 +487,8 @@
     	row--;
     }
     
-    if (self.postingComment)
-    {
-    	if (row == self.comments.count + 1)
-    		return 30;
-    	
-    	row--;
-    }
+    if ((self.postingComment) && (row == self.comments.count))
+        return 30;
     
 	if (row >= self.comments.count)
 		return 0;
@@ -588,32 +597,27 @@
     	row--;
     }
     
-    if (self.postingComment)
+    if ((self.postingComment) && (row == self.comments.count))
     {
-    	if (row == self.comments.count + 1)
-    	{
-    		FBLoadingCell* cell = (FBLoadingCell*)[tableView dequeueReusableCellWithIdentifier:@"LoadingCell"];
-	
-			if (cell == nil) 
-				cell = [[[FBLoadingCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"LoadingCell"] autorelease];
-		
-			self.loadingDelegate = cell;
-		
-			FBLoadingView* v = cell.loadingView;
-            
-            v.theme = self.theme;
-			v.noComments = 0;
-			v.loading = NO;
-            v.opaque = YES;
-            v.backgroundColor = self.theme.detailCellBackgroundColour;
-            
-			[cell startLoading];
-			
-			[v setNeedsDisplay];
-			return cell;
-    	}
-    	
-    	row--;
+        FBLoadingCell* cell = (FBLoadingCell*)[tableView dequeueReusableCellWithIdentifier:@"LoadingCell"];
+
+        if (cell == nil) 
+            cell = [[[FBLoadingCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"LoadingCell"] autorelease];
+    
+        self.loadingDelegate = cell;
+    
+        FBLoadingView* v = cell.loadingView;
+        
+        v.theme = self.theme;
+        v.noComments = 0;
+        v.loading = NO;
+        v.opaque = YES;
+        v.backgroundColor = self.theme.detailCellBackgroundColour;
+        
+        [cell startLoading];
+        
+        [v setNeedsDisplay];
+        return cell;
     }
 	
     FBCommentCell* cell = (FBCommentCell*)[tableView dequeueReusableCellWithIdentifier:@"CommentCell"];
@@ -698,18 +702,28 @@
 
 - (void)clearData
 {
-    [self.comments removeAllObjects];
-    self.noComments = nil;
-    self.noLikes = nil;
-    self.userLikes = nil;
-    self.allowComments = nil;
-    self.allowLikes = nil;
-    self.streamRowIndex = nil;
-    self.postID = nil;
-    self.name = nil;
-    self.time = nil;
-    self.post = nil;
-    self.image = (id)[NSNull null];
+    if (self.loadingData)
+        self.pendingClear = YES;
+    else
+    {    
+        [self.comments removeAllObjects];
+        self.noComments = nil;
+        self.noLikes = nil;
+        self.userLikes = nil;
+        self.allowComments = nil;
+        self.allowLikes = nil;
+        self.streamRowIndex = nil;
+        self.postID = nil;
+        self.name = nil;
+        self.time = nil;
+        self.post = nil;
+        self.image = (id)[NSNull null];
+		self.showingKeyboard = NO;
+        self.keyboardHeight = 0.0;
+        self.shouldLoadWithKeyboard = NO;
+        self.pendingClear = NO;
+        self.loadingData = NO;
+    }
 }
 
 #pragma mark -

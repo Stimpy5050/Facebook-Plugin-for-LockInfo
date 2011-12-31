@@ -79,7 +79,7 @@
     
     NSString* query = @"SELECT sender_id, created_time, title_text FROM notification WHERE recipient_id=me() AND is_hidden = 0 LIMIT 20";
     
-	NSArray* newNotifications = (NSArray*)[[[self delegate] delegate] loadFBData:[NSString stringWithFormat:@"https://api.facebook.com/method/fql.query?query=%@&format=JSON", [query stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+	NSArray* newNotifications = (NSArray*)[[[[self delegate] delegate] loadFBData:[NSString stringWithFormat:@"https://graph.facebook.com/method/fql?q=%@&format=JSON", [query stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]] objectForKey:@"data"];
     
     DLog(@"LI: FB: Notifications: %@", newNotifications);
     

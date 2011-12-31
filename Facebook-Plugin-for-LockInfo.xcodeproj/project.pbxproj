@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		EA8340AB1471815500B7B90A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA8340AA1471815500B7B90A /* CoreGraphics.framework */; };
-		EA8340AE1471816600B7B90A /* libIOKit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EA8340AD1471816600B7B90A /* libIOKit.dylib */; };
 		EA8340B01471816F00B7B90A /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA8340AF1471816F00B7B90A /* Security.framework */; };
 		EA83419A1471824300B7B90A /* arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = EA83413B1471824300B7B90A /* arrow.png */; };
 		EA83419B1471824300B7B90A /* arrow@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = EA83413C1471824300B7B90A /* arrow@2x.png */; };
@@ -66,7 +65,8 @@
 		EAE670FD146C0E3A00405DAF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAE670FC146C0E3A00405DAF /* Foundation.framework */; };
 		EAE670FF146C0E4800405DAF /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAE670FE146C0E4800405DAF /* CoreFoundation.framework */; };
 		EAE67101146C0E7600405DAF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAE67100146C0E7600405DAF /* QuartzCore.framework */; };
-		EAE67103146C0E9A00405DAF /* libobjc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EAE67102146C0E9A00405DAF /* libobjc.dylib */; };
+		EAF2F97714ACFE5000732450 /* libIOKit.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EA8340AD1471816600B7B90A /* libIOKit.dylib */; };
+		EAF2F97914ACFE5D00732450 /* libobjc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EAF2F97814ACFE5D00732450 /* libobjc.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -161,7 +161,7 @@
 		EAD38E9014714487005B1DFB /* FacebookPlugin-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FacebookPlugin-Prefix.pch"; sourceTree = "<group>"; };
 		EAD8FC5714ACB7A700AEF4EC /* FBSegmentedCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBSegmentedCell.h; sourceTree = "<group>"; };
 		EAD8FC5814ACB7A700AEF4EC /* FBSegmentedCell.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FBSegmentedCell.mm; sourceTree = "<group>"; };
-		EAE670C1146C0B6F00405DAF /* FaceBookPlugin.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceBookPlugin.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		EAE670C1146C0B6F00405DAF /* FacebookPlugin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FacebookPlugin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EAE670F4146C0DC600405DAF /* Preferences.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Preferences.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/PrivateFrameworks/Preferences.framework; sourceTree = DEVELOPER_DIR; };
 		EAE670F6146C0DF300405DAF /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		EAE670F8146C0E1200405DAF /* libsubstrate.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsubstrate.dylib; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib/libsubstrate.dylib; sourceTree = DEVELOPER_DIR; };
@@ -170,6 +170,7 @@
 		EAE670FE146C0E4800405DAF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		EAE67100146C0E7600405DAF /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		EAE67102146C0E9A00405DAF /* libobjc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.dylib; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib/libobjc.dylib; sourceTree = DEVELOPER_DIR; };
+		EAF2F97814ACFE5D00732450 /* libobjc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.dylib; path = usr/lib/libobjc.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -177,10 +178,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EAF2F97914ACFE5D00732450 /* libobjc.dylib in Frameworks */,
+				EAF2F97714ACFE5000732450 /* libIOKit.dylib in Frameworks */,
 				EA8340B01471816F00B7B90A /* Security.framework in Frameworks */,
-				EA8340AE1471816600B7B90A /* libIOKit.dylib in Frameworks */,
 				EA8340AB1471815500B7B90A /* CoreGraphics.framework in Frameworks */,
-				EAE67103146C0E9A00405DAF /* libobjc.dylib in Frameworks */,
 				EAE67101146C0E7600405DAF /* QuartzCore.framework in Frameworks */,
 				EAE670FF146C0E4800405DAF /* CoreFoundation.framework in Frameworks */,
 				EAE670FD146C0E3A00405DAF /* Foundation.framework in Frameworks */,
@@ -325,7 +326,7 @@
 		EAE670C2146C0B6F00405DAF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				EAE670C1146C0B6F00405DAF /* FaceBookPlugin.bundle */,
+				EAE670C1146C0B6F00405DAF /* FacebookPlugin.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -333,6 +334,7 @@
 		EAE670C4146C0B6F00405DAF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				EAF2F97814ACFE5D00732450 /* libobjc.dylib */,
 				EA8340AF1471816F00B7B90A /* Security.framework */,
 				EA8340AD1471816600B7B90A /* libIOKit.dylib */,
 				EA8340AA1471815500B7B90A /* CoreGraphics.framework */,
@@ -351,9 +353,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		EAE670C0146C0B6F00405DAF /* FaceBookPlugin */ = {
+		EAE670C0146C0B6F00405DAF /* FacebookPlugin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = EAE670D7146C0B7000405DAF /* Build configuration list for PBXNativeTarget "FaceBookPlugin" */;
+			buildConfigurationList = EAE670D7146C0B7000405DAF /* Build configuration list for PBXNativeTarget "FacebookPlugin" */;
 			buildPhases = (
 				EAE670BD146C0B6F00405DAF /* Sources */,
 				EAE670BE146C0B6F00405DAF /* Frameworks */,
@@ -364,9 +366,9 @@
 			);
 			dependencies = (
 			);
-			name = FaceBookPlugin;
+			name = FacebookPlugin;
 			productName = FaceBookPlugin;
-			productReference = EAE670C1146C0B6F00405DAF /* FaceBookPlugin.bundle */;
+			productReference = EAE670C1146C0B6F00405DAF /* FacebookPlugin.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -390,7 +392,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				EAE670C0146C0B6F00405DAF /* FaceBookPlugin */,
+				EAE670C0146C0B6F00405DAF /* FacebookPlugin */,
 			);
 		};
 /* End PBXProject section */
@@ -485,23 +487,65 @@
 		EAE67040146C0AA700405DAF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					armv7,
+					armv6,
+				);
 				CODE_SIGN_IDENTITY = "iPhone Developer: Conor Burgess (9YPCF7HCQP)";
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "*.nib *.lproj *.gch *.xcode* (*) .DS_Store CVS .svn .git .hg";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/PrivateFrameworks\"",
+					"\"/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks\"",
+				);
+				HEADER_SEARCH_PATHS = "\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/include\"";
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
+				INFOPLIST_FILE = Bundle/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				PROVISIONING_PROFILE = "E4CBC078-5CA0-4312-952E-3649D53A6297";
+				LIBRARY_SEARCH_PATHS = (
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib\"",
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib/system\"",
+				);
+				PRODUCT_NAME = FacebookPlugin;
+				PROVISIONING_PROFILE = "23EEFC7D-EA1B-4980-9862-6DA55EFC8A37";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
+				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
 		};
 		EAE67041146C0AA700405DAF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = (
+					armv7,
+					armv6,
+				);
 				CODE_SIGN_IDENTITY = "iPhone Developer: Conor Burgess (9YPCF7HCQP)";
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "*.nib *.lproj *.gch *.xcode* (*) .DS_Store CVS .svn .git .hg";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/PrivateFrameworks\"",
+					"\"/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks\"",
+				);
+				HEADER_SEARCH_PATHS = "\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/include\"";
 				INFOPLIST_EXPAND_BUILD_SETTINGS = YES;
-				"INFOPLIST_FILE[sdk=*]" = Bundles/Info.plist;
+				INFOPLIST_FILE = Bundle/Info.plist;
+				"INFOPLIST_FILE[sdk=*]" = Bundle/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				PROVISIONING_PROFILE = "E4CBC078-5CA0-4312-952E-3649D53A6297";
+				LIBRARY_SEARCH_PATHS = (
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib\"",
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib/system\"",
+				);
+				PRODUCT_NAME = FacebookPlugin;
+				PROVISIONING_PROFILE = "23EEFC7D-EA1B-4980-9862-6DA55EFC8A37";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
+				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
 		};
@@ -519,10 +563,10 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Conor Burgess (9YPCF7HCQP)";
 				COMPRESS_PNG_FILES = NO;
 				COPY_PHASE_STRIP = NO;
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "*.nib *.lproj *.framework *.gch *.xcode* (*) .DS_Store CVS .svn .git .hg";
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(DEVELOPER_FRAMEWORKS_DIR)\"",
-					"\"$(SDKROOT)$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"",
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks\"",
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/PrivateFrameworks\"",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -537,19 +581,27 @@
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
+				GCC_WARN_UNUSED_VARIABLE = NO;
 				GENERATE_PKGINFO_FILE = NO;
+				HEADER_SEARCH_PATHS = "\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/include\"";
 				INFOPLIST_FILE = Bundle/Info.plist;
 				INFOPLIST_PREPROCESS = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "E4CBC078-5CA0-4312-952E-3649D53A6297";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "E4CBC078-5CA0-4312-952E-3649D53A6297";
+				LIBRARY_SEARCH_PATHS = (
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib/\"",
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib/system\"",
+				);
+				OTHER_LDFLAGS = "-bundle";
+				PRODUCT_NAME = FacebookPlugin;
+				PROVISIONING_PROFILE = "23EEFC7D-EA1B-4980-9862-6DA55EFC8A37";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "23EEFC7D-EA1B-4980-9862-6DA55EFC8A37";
+				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
 				VALIDATE_PRODUCT = NO;
-				WRAPPER_EXTENSION = bundle;
+				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
 		};
@@ -567,10 +619,10 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Conor Burgess (9YPCF7HCQP)";
 				COMPRESS_PNG_FILES = NO;
 				COPY_PHASE_STRIP = YES;
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "*.nib *.lproj *.framework *.gch *.xcode* (*) .DS_Store CVS .svn .git .hg";
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(DEVELOPER_FRAMEWORKS_DIR)\"",
-					"\"$(SDKROOT)$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks\"",
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks\"",
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/PrivateFrameworks\"",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -578,20 +630,28 @@
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
+				GCC_WARN_UNUSED_VARIABLE = NO;
 				GENERATE_PKGINFO_FILE = NO;
+				HEADER_SEARCH_PATHS = "\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/include\"";
 				INFOPLIST_FILE = Bundle/Info.plist;
 				INFOPLIST_PREPROCESS = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				LIBRARY_SEARCH_PATHS = (
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib/\"",
+					"\"/Volumes/Mac/Burgch/Documents/Developer/SDKs/iPhoneOS5.0.sdk/usr/lib/system\"",
+				);
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "E4CBC078-5CA0-4312-952E-3649D53A6297";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "E4CBC078-5CA0-4312-952E-3649D53A6297";
+				OTHER_LDFLAGS = "-bundle";
+				PRODUCT_NAME = FacebookPlugin;
+				PROVISIONING_PROFILE = "23EEFC7D-EA1B-4980-9862-6DA55EFC8A37";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "23EEFC7D-EA1B-4980-9862-6DA55EFC8A37";
+				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "";
 				VALIDATE_PRODUCT = YES;
-				WRAPPER_EXTENSION = bundle;
+				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
 		};
@@ -607,7 +667,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EAE670D7146C0B7000405DAF /* Build configuration list for PBXNativeTarget "FaceBookPlugin" */ = {
+		EAE670D7146C0B7000405DAF /* Build configuration list for PBXNativeTarget "FacebookPlugin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				EAE670D8146C0B7000405DAF /* Debug */,

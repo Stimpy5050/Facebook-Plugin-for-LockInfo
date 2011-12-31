@@ -65,3 +65,11 @@ package: 	$(Name)
 	cp control package/DEBIAN
 	find package -name .svn -print0 | xargs -0 rm -rf
 	dpkg-deb -b package $(Name)_$(shell grep ^Version: control | cut -d ' ' -f 2).deb
+
+package2:
+	mkdir -p package/DEBIAN
+	mkdir -p package/Library/LockInfo/Plugins/
+	cp ~/Desktop/com.burgess.lockinfo.FacebookPlugin.bundle package/Library/LockInfo/Plugins
+	cp ~/Desktop/control package/DEBIAN
+	find package -name .svn -print0 | xargs -0 rm -rf
+	dpkg-deb -b package $(Name)_$(shell grep ^Version: control | cut -d ' ' -f 2).deb

@@ -45,37 +45,50 @@
         }
     }
     
+    
     if ((self.postView.noLikes > 0) || (self.postView.noComments > 0))
     {
-    	int leftOffset = (self.postView.image == (id)[NSNull null] ? 0 : 25);
-    
-        if ((self.postView.noLikes > 0) && (self.postView.noComments > 0))
-    	{
-        	CGSize textSize = [[NSString stringWithFormat:@"%i Like%@ %i Comment%@", self.postView.noLikes, ((self.postView.noLikes > 1) ? @"s" : @""), self.postView.noComments, ((self.postView.noComments > 1) ? @"s" : @"")] sizeWithFont:[self.postView.theme.summaryStyle.font fontWithSize:self.postView.theme.summaryStyle.font.pointSize - 3]];
-			if (CGRectContainsPoint(CGRectMake(leftOffset + 5, r.size.height - 35, 60 +  textSize.width, 32), point))
-			{
-				self.buttonTouch = kInfoButtonTouch;
-				return YES;
-			}
-		}
-    	else if (self.postView.noLikes > 0)
-    	{
-        	CGSize likeSize = [[NSString stringWithFormat:@"%i Like%@", self.postView.noLikes, ((self.postView.noLikes > 1) ? @"s" : @"")] sizeWithFont:[self.postView.theme.summaryStyle.font fontWithSize:self.postView.theme.summaryStyle.font.pointSize - 3]];
-        	if (CGRectContainsPoint(CGRectMake(leftOffset + 5, r.size.height - 35, 35 +  likeSize.width, 32), point))
-			{
-				self.buttonTouch = kInfoButtonTouch;
-				return YES;
-			}
-    	}
-    	else if (self.postView.noComments > 0)
-    	{
-        	CGSize commentSize = [[NSString stringWithFormat:@"%i Comment%@", self.postView.noComments, ((self.postView.noComments > 1) ? @"s" : @"")] sizeWithFont:[self.postView.theme.summaryStyle.font fontWithSize:self.postView.theme.summaryStyle.font.pointSize - 3]];
-			if (CGRectContainsPoint(CGRectMake(leftOffset + 5, r.size.height - 35, 35 +  commentSize.width, 32), point))
-			{
-				self.buttonTouch = kInfoButtonTouch;
-				return YES;
-			}
-    	}
+        int leftOffset = (self.postView.image == (id)[NSNull null] ? 0 : 25);
+        
+        if (self.postView.plainStyle)
+        {
+            NSString* infoString = [NSString stringWithFormat:@"%@%@%@", ((self.postView.noLikes > 0) ? [NSString stringWithFormat:@"%i Like%@", self.postView.noLikes, ((self.postView.noLikes > 1) ? @"s" : @"")] : @""), (((self.postView.noLikes > 0) && (self.postView.noComments > 0)) ? @" and " : @""), ((self.postView.noComments > 0) ? [NSString stringWithFormat:@"%i Comment%@", self.postView.noComments, ((self.postView.noComments > 1) ? @"s" : @"")] : @"")];
+            CGSize infoSize = [infoString sizeWithFont:[self.postView.theme.summaryStyle.font fontWithSize:self.postView.theme.summaryStyle.font.pointSize - 3]];
+            
+            if (CGRectContainsPoint(CGRectMake(leftOffset, r.size.height - 28, 16 + infoSize.width, 26), point))
+            {
+                self.buttonTouch = kInfoButtonTouch;
+                return YES;
+            }
+        } else {
+            if ((self.postView.noLikes > 0) && (self.postView.noComments > 0))
+            {
+                CGSize textSize = [[NSString stringWithFormat:@"%i Like%@ %i Comment%@", self.postView.noLikes, ((self.postView.noLikes > 1) ? @"s" : @""), self.postView.noComments, ((self.postView.noComments > 1) ? @"s" : @"")] sizeWithFont:[self.postView.theme.summaryStyle.font fontWithSize:self.postView.theme.summaryStyle.font.pointSize - 3]];
+                if (CGRectContainsPoint(CGRectMake(leftOffset + 5, r.size.height - 35, 60 +  textSize.width, 32), point))
+                {
+                    self.buttonTouch = kInfoButtonTouch;
+                    return YES;
+                }
+            }
+            else if (self.postView.noLikes > 0)
+            {
+                CGSize likeSize = [[NSString stringWithFormat:@"%i Like%@", self.postView.noLikes, ((self.postView.noLikes > 1) ? @"s" : @"")] sizeWithFont:[self.postView.theme.summaryStyle.font fontWithSize:self.postView.theme.summaryStyle.font.pointSize - 3]];
+                if (CGRectContainsPoint(CGRectMake(leftOffset + 5, r.size.height - 35, 35 +  likeSize.width, 32), point))
+                {
+                    self.buttonTouch = kInfoButtonTouch;
+                    return YES;
+                }
+            }
+            else if (self.postView.noComments > 0)
+            {
+                CGSize commentSize = [[NSString stringWithFormat:@"%i Comment%@", self.postView.noComments, ((self.postView.noComments > 1) ? @"s" : @"")] sizeWithFont:[self.postView.theme.summaryStyle.font fontWithSize:self.postView.theme.summaryStyle.font.pointSize - 3]];
+                if (CGRectContainsPoint(CGRectMake(leftOffset + 5, r.size.height - 35, 35 +  commentSize.width, 32), point))
+                {
+                    self.buttonTouch = kInfoButtonTouch;
+                    return YES;
+                }
+            }
+        }
     }
     
     return NO;
@@ -141,7 +154,7 @@
 
 @implementation FBPostView
 
-@synthesize name, time, image, theme, message, noComments, noLikes, allowComments, allowLikes, optionsButtonName, infoButtonName;
+@synthesize name, time, image, theme, message, noComments, noLikes, allowComments, allowLikes, optionsButtonName, infoButtonName, plainStyle;
 
 - (void)setFrame:(CGRect) r
 {
@@ -178,36 +191,46 @@
     timeStyle.textColor = [UIColor colorWithRed:87.0/255.0 green:107.0/255.0 blue:149.0/255.0 alpha:1.0];
     
     [timeStyle.textColor set];
-    if ((self.noLikes > 0) && (self.noComments > 0))
+    if (self.plainStyle)
     {
-        CGSize likeSize = [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
-        CGSize commentSize = [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
+        NSString* infoString = [NSString stringWithFormat:@"%@%@%@", ((self.noLikes > 0) ? [NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] : @""), (((self.noLikes > 0) && (self.noComments > 0)) ? @" and " : @""), ((self.noComments > 0) ? [NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] : @"")];
+        CGSize infoSize = [infoString sizeWithFont:timeStyle.font];
+        
         [[[[FBSharedDataController sharedInstance] pluginImage:self.infoButtonName] stretchableImageWithLeftCapWidth:5 topCapHeight:5] 
-                                                                                    drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 55 +  likeSize.width + commentSize.width, 25)];
-        [[[FBSharedDataController sharedInstance] pluginImage:@"LikeIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 4, 15, 14)];
-        [[[FBSharedDataController sharedInstance] pluginImage:@"CommentsIcon"] drawInRect:CGRectMake(leftOffset + 36 + likeSize.width, topOfInfo + 3, 15, 19)];
-        [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (likeSize.height / 2)), likeSize.width, likeSize.height) 
-                                                              withFont:timeStyle.font lineBreakMode:UILineBreakModeTailTruncation];
-        [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 54 + likeSize.width, topOfInfo + (int)(12 - (commentSize.height / 2)), commentSize.width, commentSize.height) withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
-    }
-    else if (self.noLikes > 0)
-    {
-        CGSize likeSize = [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
-        [[[[FBSharedDataController sharedInstance] pluginImage:@"PostInfoBackground"] stretchableImageWithLeftCapWidth:5 topCapHeight:5] 
-                                                                                    drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 30 +  likeSize.width, 25)];
-        [[[FBSharedDataController sharedInstance] pluginImage:@"LikeIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 4, 15, 14)];
-        [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (likeSize.height / 2)), likeSize.width, likeSize.height) 
-                                                              withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
-    }
-    else if (self.noComments > 0)
-    {
-        CGSize commentSize = [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
-        [[[[FBSharedDataController sharedInstance] pluginImage:@"PostInfoBackground"] stretchableImageWithLeftCapWidth:5 topCapHeight:5] 
-                                                                                    drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 30 +  commentSize.width, 25)];
-        [[[FBSharedDataController sharedInstance] pluginImage:@"CommentsIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 3, 15, 19)];
-        [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (commentSize.height / 2)), commentSize.width, commentSize.height) withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
-    }
-                           
+         drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 10 +  infoSize.width, 20) blendMode:kCGBlendModeNormal alpha:0.75];
+        
+        [infoString drawInRect:CGRectMake(leftOffset + 15, topOfInfo + (int)(10 - (infoSize.height / 2)), infoSize.width, infoSize.height)  withFont:timeStyle.font lineBreakMode:UILineBreakModeTailTruncation];
+    } else {
+        if ((self.noLikes > 0) && (self.noComments > 0))
+        {
+            CGSize likeSize = [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
+            CGSize commentSize = [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
+            [[[[FBSharedDataController sharedInstance] pluginImage:self.infoButtonName] stretchableImageWithLeftCapWidth:5 topCapHeight:5] 
+                                                                                        drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 55 +  likeSize.width + commentSize.width, 25)];
+            [[[FBSharedDataController sharedInstance] pluginImage:@"LikeIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 4, 15, 14)];
+            [[[FBSharedDataController sharedInstance] pluginImage:@"CommentsIcon"] drawInRect:CGRectMake(leftOffset + 36 + likeSize.width, topOfInfo + 3, 15, 19)];
+            [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (likeSize.height / 2)), likeSize.width, likeSize.height) 
+                                                                  withFont:timeStyle.font lineBreakMode:UILineBreakModeTailTruncation];
+            [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 54 + likeSize.width, topOfInfo + (int)(12 - (commentSize.height / 2)), commentSize.width, commentSize.height) withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
+        }
+        else if (self.noLikes > 0)
+        {
+            CGSize likeSize = [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
+            [[[[FBSharedDataController sharedInstance] pluginImage:@"PostInfoBackground"] stretchableImageWithLeftCapWidth:5 topCapHeight:5] 
+                                                                                        drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 30 +  likeSize.width, 25)];
+            [[[FBSharedDataController sharedInstance] pluginImage:@"LikeIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 4, 15, 14)];
+            [[NSString stringWithFormat:@"%i Like%@", self.noLikes, ((self.noLikes > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (likeSize.height / 2)), likeSize.width, likeSize.height) 
+                                                                  withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
+        }
+        else if (self.noComments > 0)
+        {
+            CGSize commentSize = [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] sizeWithFont:timeStyle.font];
+            [[[[FBSharedDataController sharedInstance] pluginImage:@"PostInfoBackground"] stretchableImageWithLeftCapWidth:5 topCapHeight:5] 
+                                                                                        drawInRect:CGRectMake(leftOffset + 10, topOfInfo, 30 +  commentSize.width, 25)];
+            [[[FBSharedDataController sharedInstance] pluginImage:@"CommentsIcon"] drawInRect:CGRectMake(leftOffset + 15, topOfInfo + 3, 15, 19)];
+            [[NSString stringWithFormat:@"%i Comment%@", self.noComments, ((self.noComments > 1) ? @"s" : @"")] drawInRect:CGRectMake(leftOffset + 33, topOfInfo + (int)(12 - (commentSize.height / 2)), commentSize.width, commentSize.height) withFont:timeStyle.font lineBreakMode:UILineBreakModeClip];
+        }
+    }                    
     [timeStyle release];
 }
 

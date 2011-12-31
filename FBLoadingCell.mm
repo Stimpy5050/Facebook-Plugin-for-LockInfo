@@ -1,4 +1,5 @@
 #import "FBLoadingCell.h"
+#import "FBCommon.h"
 
 @implementation FBLoadingCell
 
@@ -58,6 +59,8 @@
 {
 	CGRect r = self.superview.bounds;
 	
+    DLog(@"LI: FB: Loading Cell drawing - Theme: %@", theme);
+    
     if (self.loading)
 	{
 		CGSize activitySize = self.activity.frame.size;

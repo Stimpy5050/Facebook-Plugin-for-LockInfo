@@ -7,6 +7,8 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Plain Style will make Comments and Likes less pronounced. Small Buttons makes the Status and Notifications button smaller.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -91,6 +93,64 @@
 			<string>ShowImages</string>
 			<key>label</key>
 			<string>Show Images</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<string>NO</string>
+			<key>defaults</key>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
+			<key>key</key>
+			<string>MiniButtons</string>
+			<key>label</key>
+			<string>Small Buttons</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<string>YES</string>
+			<key>defaults</key>
+			<string>com.burgess.lockinfo.FacebookPlugin</string>
+			<key>key</key>
+			<string>PlainComments</string>
+			<key>label</key>
+			<string>Plain Style Comments</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>isStaticText</key>
+			<string>YES</string>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<false/>
+				</dict>
+				<dict>
+					<key>multitasking</key>
+					<false/>
+				</dict>
+			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSTitleValueCell</string>
+			<key>label</key>
+			<string>Plain Style will make Comments and Likes less pronounced. Small Buttons makes the Status and Notifications button smaller.</string>
+			<key>requiredCapabilities</key>
+			<array>
+				<dict>
+					<key>wildcat</key>
+					<false/>
+				</dict>
+				<dict>
+					<key>multitasking</key>
+					<false/>
+				</dict>
+			</array>
 		</dict>
 		<dict>
 			<key>cell</key>

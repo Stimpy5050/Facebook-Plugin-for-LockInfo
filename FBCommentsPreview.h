@@ -30,6 +30,8 @@
     BOOL showingKeyboard;
     CGFloat keyboardHeight;
     BOOL postingComment;
+    BOOL loadingData;
+    BOOL pendingClear;
 }
 
 @property (nonatomic, retain) FBPreviewTheme* theme;
@@ -54,6 +56,8 @@
 @property BOOL showingKeyboard;
 @property CGFloat keyboardHeight;
 @property BOOL postingComment;
+@property BOOL loadingData;
+@property BOOL pendingClear;
 
 // Keyboard methods
 - (void)scrollToLastRow;

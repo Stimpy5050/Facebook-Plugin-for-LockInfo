@@ -7,6 +7,7 @@
 #import "FacebookPlugin.h"
 #import "FBPostCell.h"
 #import "FBButtonCell.h"
+#import "FBSegmentedCell.h"
 #import "FBPreview.h"
 #import "FBSingletons.h"
 #import "FBCommon.h"
@@ -276,7 +277,12 @@ static Class json_class = NSClassFromString(@"JSON");
     BOOL buttonCell = ([self newPosts] || [self showNotifications]);
     
     if (buttonCell && indexPath.row == 0)
-		return 42;
+    {
+        if ([self miniButtons])
+            return 24;
+        
+        return 42;
+    }
     
     int row = indexPath.row - (buttonCell ? 1 : 0);
 	if (row >= self.feedPosts.count)
@@ -293,7 +299,7 @@ static Class json_class = NSClassFromString(@"JSON");
     NSString* message = [elem objectForKey:@"message"];
 	CGSize s = [message sizeWithFont:tableView.theme.detailStyle.font constrainedToSize:CGSizeMake(width - (10 + leftOffset + rightOffset), 4000) lineBreakMode:UILineBreakModeWordWrap];
     
-    int infoHeight = ((([[[elem objectForKey:@"likes"] objectForKey:@"count"] intValue] > 0) || ([[[elem objectForKey:@"comments"] objectForKey:@"count"] intValue] > 0)) ? 31 : 0);
+    int infoHeight = ((([[[elem objectForKey:@"likes"] objectForKey:@"count"] intValue] > 0) || ([[[elem objectForKey:@"comments"] objectForKey:@"count"] intValue] > 0)) ? (([self plainComments]) ? 21 : 31) : 0);
     
 	return (s.height + (2 * summary) + infoHeight + 10);
 }
@@ -321,22 +327,40 @@ static Class json_class = NSClassFromString(@"JSON");
     {
         if (row == 0)
         {
-            FBButtonCell* cell = (FBButtonCell*)[tableView dequeueReusableCellWithIdentifier:@"FBButtonCell"];
-            
-            if (cell == nil) 
-                cell = [[[FBButtonCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"FBButtonCell"] autorelease];
+            if ([self miniButtons])
+            {
+                FBSegmentedCell* cell = (FBSegmentedCell*)[tableView dequeueReusableCellWithIdentifier:@"FBSegmentedCell"];
                 
-            if (!cell.backgroundLIView.image)
-                cell.backgroundLIView.image = tableView.sectionSubheader;
-            
-            cell.delegate = self;
-            cell.allowStatus = [self newPosts];
-            cell.allowNotifications = [self showNotifications];
-            [cell setNeedsLayout];
-            
-            return cell;
+                if (cell == nil)
+                    cell = [[[FBSegmentedCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"FBSegmentedCell"] autorelease];
+                
+                if (!cell.backgroundLIView.image)
+                    cell.backgroundLIView.image = tableView.sectionSubheader;
+                
+                cell.delegate = self;
+                cell.allowStatus = [self newPosts];
+                cell.allowNotifications = [self showNotifications];
+                [cell setNeedsLayout];
+                
+                return cell;
+                
+            } else {
+                FBButtonCell* cell = (FBButtonCell*)[tableView dequeueReusableCellWithIdentifier:@"FBButtonCell"];
+                
+                if (cell == nil) 
+                    cell = [[[FBButtonCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"FBButtonCell"] autorelease];
+                    
+                if (!cell.backgroundLIView.image)
+                    cell.backgroundLIView.image = tableView.sectionSubheader;
+                
+                cell.delegate = self;
+                cell.allowStatus = [self newPosts];
+                cell.allowNotifications = [self showNotifications];
+                [cell setNeedsLayout];
+                
+                return cell;
+            }
         }
-		
         row--;
     }
 	
@@ -372,6 +396,7 @@ static Class json_class = NSClassFromString(@"JSON");
         
         v.allowLikes = (([[[elem objectForKey:@"likes"] objectForKey:@"can_like"] boolValue]) && ([self allowLikes]));
 		v.noLikes = [[[elem objectForKey:@"likes"] objectForKey:@"count"] intValue];
+        v.plainStyle = [self plainComments];
 
 		if ([self showImages])
 		{
@@ -535,9 +560,9 @@ int main(int argc, char *argv[])
     [self.plugin updateView:dict];
 }
 
-- (void)processUsers:(NSArray*)feed
+- (void)processUsers:(NSDictionary*)feed
 {
-    NSMutableArray* feedUsers = [NSMutableArray arrayWithArray:[[feed objectAtIndex:1] objectForKey:@"fql_result_set"]];
+    NSMutableArray* feedUsers = [NSMutableArray arrayWithArray:[[[feed objectForKey:@"data"] objectAtIndex:1] objectForKey:@"fql_result_set"]];
     
     for (id user in feedUsers)
     {
@@ -548,9 +573,9 @@ int main(int argc, char *argv[])
     [[FBSharedDataController sharedInstance] performSelectorOnMainThread:@selector(processDownloads) withObject:nil waitUntilDone:NO];
 }
 
-- (NSArray*)processedFeed:(NSArray*)feed
+- (NSArray*)processedFeed:(NSDictionary*)feed
 {
-	NSMutableArray* newPosts = [NSMutableArray arrayWithArray:[[feed objectAtIndex:0] objectForKey:@"fql_result_set"]];
+	NSMutableArray* newPosts = [NSMutableArray arrayWithArray:[[[feed objectForKey:@"data"] objectAtIndex:0] objectForKey:@"fql_result_set"]];
 
 	return newPosts;
 }
@@ -583,9 +608,10 @@ int main(int argc, char *argv[])
         id obj;
         
         if (iOS5)
-            obj = [NSClassFromString(@"NSJSONSerialization") JSONObjectWithData:data options:0 error:&error];
+            obj = [NSClassFromString(@"NSJSONSerialization") JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
         else
-            obj = [json_class objectWithData:data options:0 error:&error];
+            obj = [json_class objectWithData:data options:1 error:&error];
+        
 		DLog(@"LI: FB: Loaded Data: %@", obj);
         return obj;
 	}
@@ -623,7 +649,10 @@ int main(int argc, char *argv[])
     if (error)
         DLog(@"LI: Facebook: JSON error: %@", error);
     
-	NSArray* feed = (NSArray*)[self loadFBData:[NSString stringWithFormat:@"https://api.facebook.com/method/fql.multiquery?queries=%@&format=JSON", [query stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]];
+    NSString* url = [NSString stringWithFormat:@"https://graph.facebook.com/fql?q=%@&format=JSON", [query stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    DLog(@"LI: FB: url: %@", url);
+	
+    NSDictionary* feed = (NSDictionary*)[self loadFBData:url];
     
     NSArray* newFeed = [self processedFeed:feed];
     [self processUsers:feed];

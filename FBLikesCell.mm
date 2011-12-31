@@ -132,7 +132,7 @@
                 self.likesView.likes++;
             }
             
-			if ([self.delegate respondsToSelector:@selector(setUserLikesPost)])
+			if ([self.delegate respondsToSelector:@selector(setUserLikesPost:)])
 				[self.delegate setUserLikesPost:self.likesView.userLikes];
 		}        
 	}

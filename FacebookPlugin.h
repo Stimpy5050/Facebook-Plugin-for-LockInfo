@@ -56,8 +56,8 @@
 - (BOOL)plainComments;
 
 // Update methods
-- (void)processUsers:(NSArray*)feed;
-- (NSArray*)processedFeed:(NSArray*)feed;
+- (void)processUsers:(NSDictionary*)feed;
+- (NSArray*)processedFeed:(NSDictionary*)feed;
 - (id)loadFBData:(NSString*)url;
 - (void)updateFeed:(BOOL)force;
 

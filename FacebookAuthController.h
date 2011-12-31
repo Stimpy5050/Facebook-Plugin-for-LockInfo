@@ -5,7 +5,7 @@
 
 @interface PSDetailController ()
 
-- (void)viewWillBecomeVisible:(id)specifier;
+//- (void)viewWillBecomeVisible:(id)specifier;
 - (void)popControllerWithAnimation:(BOOL)animation;
 
 @end

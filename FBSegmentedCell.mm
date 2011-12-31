@@ -11,7 +11,7 @@
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier 
 {
     if (self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier]) {
-        CGRect frame = CGRectMake(0.0, 0.0, self.contentView.bounds.size.width, self.contentView.bounds.size.height);
+        CGRect frame = CGRectMake(-5.0, 0.0, self.contentView.bounds.size.width + 10.0, 24.0);
         
         self.backgroundLIView = [[UIImageView alloc] initWithFrame:frame];
         self.backgroundLIView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
@@ -24,7 +24,7 @@
         self.segmentedView.momentary = YES;
         self.segmentedView.tintColor = [UIColor clearColor];
         [self.segmentedView addTarget:self action:@selector(segmentTapped:) forControlEvents:UIControlEventValueChanged];
-        self.segmentedView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+        self.segmentedView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [self.contentView addSubview:self.segmentedView];
     }
     return self;

@@ -95,11 +95,9 @@ CGMutablePathRef createPointedContainerPath(CGRect rect, CGFloat arrowWidth, CGF
     
 	CGContextRef bitmapContext = NULL;
 	CGColorSpaceRef colourSpace;
-	int bitmapByteCount;
 	int bitmapBytesPerRow;
 	
 	bitmapBytesPerRow = (width * 4);
-	bitmapByteCount = (bitmapBytesPerRow * height);
 	
 	colourSpace = CGColorSpaceCreateDeviceRGB();
 	bitmapContext = CGBitmapContextCreate (NULL, width, height, 8, bitmapBytesPerRow,
@@ -194,11 +192,9 @@ CGMutablePathRef createPointedContainerPath(CGRect rect, CGFloat arrowWidth, CGF
     
 	CGContextRef bitmapContext = NULL;
 	CGColorSpaceRef colourSpace;
-	int bitmapByteCount;
 	int bitmapBytesPerRow;
 	
 	bitmapBytesPerRow = (width * 4);
-	bitmapByteCount = (bitmapBytesPerRow * height);
 	
 	colourSpace = CGColorSpaceCreateDeviceRGB();
 	bitmapContext = CGBitmapContextCreate (NULL, width, height, 8, bitmapBytesPerRow,
@@ -280,11 +276,9 @@ CGMutablePathRef createPointedContainerPath(CGRect rect, CGFloat arrowWidth, CGF
     
 	CGContextRef bitmapContext = NULL;
 	CGColorSpaceRef colourSpace;
-	int bitmapByteCount;
 	int bitmapBytesPerRow;
 	
 	bitmapBytesPerRow = (width * 4);
-	bitmapByteCount = (bitmapBytesPerRow * height);
 	
 	colourSpace = CGColorSpaceCreateDeviceRGB();
 	bitmapContext = CGBitmapContextCreate (NULL, width, height, 8, bitmapBytesPerRow,

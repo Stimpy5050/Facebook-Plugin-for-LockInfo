@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <Preferences/PSViewController.h>
+#import <UIKit/UIKit.h>
 
 @interface PSViewController (FacebookAdditions)
 

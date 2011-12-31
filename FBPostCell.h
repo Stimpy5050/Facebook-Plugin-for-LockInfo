@@ -20,6 +20,7 @@ typedef enum {
 	int noLikes;
 	BOOL allowLikes;
 	BOOL allowComments;
+    BOOL plainStyle;
 }
 
 @property (nonatomic, retain) NSString* name;
@@ -33,6 +34,7 @@ typedef enum {
 @property int noLikes;
 @property BOOL allowLikes;
 @property BOOL allowComments;
+@property BOOL plainStyle;
 
 @end
 
