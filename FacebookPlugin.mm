@@ -77,6 +77,22 @@ static Class json_class = NSClassFromString(@"JSON");
 		refresh = r.intValue;
     return refresh;
 }
+
+- (BOOL)miniButtons
+{
+    BOOL mini = NO;
+    if (NSNumber* m = [self.plugin.preferences objectForKey:@"MiniButtons"])
+        mini = m.boolValue;
+    return mini;
+}
+
+- (BOOL)plainComments
+{
+    BOOL plain = NO;
+    if (NSNumber* p = [self.plugin.preferences objectForKey:@"PlainComments"])
+        plain = p.boolValue;
+    return plain;
+}
     
 #pragma mark -
 #pragma mark Button action methods
@@ -429,7 +445,7 @@ int main(int argc, char *argv[])
 {
 }
 
-- (id)initWithPlugin:(LIPlugin*) plugin
+- (id)initWithPlugin:(LIPlugin*) aPlugin
 {
     iOS5 = NSClassFromString(@"SBNewsstand") != nil;
     
@@ -443,7 +459,7 @@ int main(int argc, char *argv[])
     }
     
 	self = [super init];
-	self.plugin = plugin;
+	self.plugin = aPlugin;
     
     [[FBSharedDataController sharedInstance] initCache];
     

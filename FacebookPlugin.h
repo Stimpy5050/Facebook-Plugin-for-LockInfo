@@ -52,6 +52,8 @@
 - (BOOL)showImages;
 - (int)maxPosts;
 - (NSTimeInterval)refreshInterval;
+- (BOOL)miniButtons;
+- (BOOL)plainComments;
 
 // Update methods
 - (void)processUsers:(NSArray*)feed;

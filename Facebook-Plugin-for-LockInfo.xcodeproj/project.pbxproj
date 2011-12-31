@@ -58,6 +58,7 @@
 		EA8341C81471824300B7B90A /* KeychainUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = EA8341811471824300B7B90A /* KeychainUtils.mm */; };
 		EA8341CF1471824300B7B90A /* PullToRefreshView.m in Sources */ = {isa = PBXBuildFile; fileRef = EA83418C1471824300B7B90A /* PullToRefreshView.m */; };
 		EA8341D01471824300B7B90A /* UIImage-FBAdditions.mm in Sources */ = {isa = PBXBuildFile; fileRef = EA8341991471824300B7B90A /* UIImage-FBAdditions.mm */; };
+		EAD8FC5914ACB7A700AEF4EC /* FBSegmentedCell.mm in Sources */ = {isa = PBXBuildFile; fileRef = EAD8FC5814ACB7A700AEF4EC /* FBSegmentedCell.mm */; };
 		EAE670F5146C0DC600405DAF /* Preferences.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAE670F4146C0DC600405DAF /* Preferences.framework */; };
 		EAE670F7146C0DF300405DAF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAE670F6146C0DF300405DAF /* CoreGraphics.framework */; };
 		EAE670F9146C0E1200405DAF /* libsubstrate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EAE670F8146C0E1200405DAF /* libsubstrate.dylib */; };
@@ -158,6 +159,8 @@
 		EA8341981471824300B7B90A /* UIImage-FBAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage-FBAdditions.h"; sourceTree = "<group>"; };
 		EA8341991471824300B7B90A /* UIImage-FBAdditions.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = "UIImage-FBAdditions.mm"; sourceTree = "<group>"; };
 		EAD38E9014714487005B1DFB /* FacebookPlugin-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "FacebookPlugin-Prefix.pch"; sourceTree = "<group>"; };
+		EAD8FC5714ACB7A700AEF4EC /* FBSegmentedCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBSegmentedCell.h; sourceTree = "<group>"; };
+		EAD8FC5814ACB7A700AEF4EC /* FBSegmentedCell.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FBSegmentedCell.mm; sourceTree = "<group>"; };
 		EAE670C1146C0B6F00405DAF /* FaceBookPlugin.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FaceBookPlugin.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		EAE670F4146C0DC600405DAF /* Preferences.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Preferences.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/PrivateFrameworks/Preferences.framework; sourceTree = DEVELOPER_DIR; };
 		EAE670F6146C0DF300405DAF /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
@@ -269,6 +272,7 @@
 				EA8341571471824300B7B90A /* FacebookDeAuthController.mm */,
 				EA8341581471824300B7B90A /* FacebookDonate.h */,
 				EA8341591471824300B7B90A /* FacebookDonate.mm */,
+				EAD38E9014714487005B1DFB /* FacebookPlugin-Prefix.pch */,
 				EA83415A1471824300B7B90A /* FacebookPlugin.h */,
 				EA83415B1471824300B7B90A /* FacebookPlugin.mm */,
 				EA83415C1471824300B7B90A /* FBButtonCell.h */,
@@ -298,22 +302,23 @@
 				EA8341741471824300B7B90A /* FBPreview.mm */,
 				EA8341751471824300B7B90A /* FBPreviewController.h */,
 				EA8341761471824300B7B90A /* FBPreviewController.mm */,
+				EAD8FC5714ACB7A700AEF4EC /* FBSegmentedCell.h */,
+				EAD8FC5814ACB7A700AEF4EC /* FBSegmentedCell.mm */,
 				EA8341771471824300B7B90A /* FBSingletons.h */,
 				EA8341781471824300B7B90A /* FBSingletons.mm */,
 				EA8341791471824300B7B90A /* FBTextView.h */,
 				EA83417A1471824300B7B90A /* FBTextView.mm */,
+				EAE670C4146C0B6F00405DAF /* Frameworks */,
 				EA83417B1471824300B7B90A /* Images */,
 				EA8341801471824300B7B90A /* KeychainUtils.h */,
 				EA8341811471824300B7B90A /* KeychainUtils.mm */,
 				EA8341831471824300B7B90A /* Plugin */,
+				EAE670C2146C0B6F00405DAF /* Products */,
 				EA83418B1471824300B7B90A /* PullToRefreshView.h */,
 				EA83418C1471824300B7B90A /* PullToRefreshView.m */,
 				EA83418D1471824300B7B90A /* SDK */,
 				EA8341981471824300B7B90A /* UIImage-FBAdditions.h */,
 				EA8341991471824300B7B90A /* UIImage-FBAdditions.mm */,
-				EAD38E9014714487005B1DFB /* FacebookPlugin-Prefix.pch */,
-				EAE670C4146C0B6F00405DAF /* Frameworks */,
-				EAE670C2146C0B6F00405DAF /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -470,6 +475,7 @@
 				EA8341C81471824300B7B90A /* KeychainUtils.mm in Sources */,
 				EA8341CF1471824300B7B90A /* PullToRefreshView.m in Sources */,
 				EA8341D01471824300B7B90A /* UIImage-FBAdditions.mm in Sources */,
+				EAD8FC5914ACB7A700AEF4EC /* FBSegmentedCell.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
