@@ -2,13 +2,6 @@
 #import <Preferences/PSRootController.h>
 #import <CommonCrypto/CommonHMAC.h>
 
-@interface UIProgressIndicator : UIView
-
-+(CGSize) defaultSizeForStyle:(int) size;
--(void) setStyle:(int) style;
-
-@end
-
 @implementation FacebookDeAuthController
 
 -(void) initAuth

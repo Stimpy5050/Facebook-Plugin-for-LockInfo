@@ -4,13 +4,6 @@
 #import <CommonCrypto/CommonHMAC.h>
 #import "FacebookAuthPrivate.h"
 
-@interface UIProgressIndicator : UIView
-
-+(CGSize) defaultSizeForStyle:(int) size;
--(void) setStyle:(int) style;
-
-@end
-
 @implementation FacebookAuthController
 
 @synthesize webView, activity;

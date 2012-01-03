@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <Preferences/PSDetailController.h>
 
 #define FB_DEBUG
 
@@ -40,3 +41,11 @@ extern "C" CFStringRef UIDateFormatStringForFormatType(CFStringRef type);
 + (id)stringWithObject:(id)arg1 options:(unsigned int)arg2 error:(id *)arg3;
 
 @end
+
+@interface PSDetailController ()
+
+- (void)viewWillBecomeVisible:(id)specifier;
+- (void)popControllerWithAnimation:(BOOL)animation;
+
+@end
+

@@ -1,14 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import <Preferences/PSDetailController.h>
 #import "FacebookAuth.h"
-
-@interface PSDetailController ()
-
-//- (void)viewWillBecomeVisible:(id)specifier;
-- (void)popControllerWithAnimation:(BOOL)animation;
-
-@end
+#import "FBCommon.h"
 
 @interface FacebookAuthController : PSDetailController <UIWebViewDelegate, UIAlertViewDelegate>
 {
